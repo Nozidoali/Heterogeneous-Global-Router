@@ -1,4 +1,4 @@
-#include "../base/base.h"
+#include "util.h"
 
 #define SUCCESS 1
 #define FAILED 0
@@ -6,6 +6,24 @@
 #include <fstream>
 #include <cstring>
 using namespace std;
+
+/**
+ * Return the index of edge between two given point.
+ */
+int toEdge(int x1, int x2, int y1, int y2, int gx, int gy) {
+    int x = (x1+x2)>>1;
+    int y = (y1+y2)>>1;
+    if (x1==x2) {
+        x+y*gx;
+    }
+    else if (y1==y2) {
+        x*y*(gx-1);
+    }
+    else {
+        // no edge between two given edge
+        return -1;
+    }
+}
 
 int readBenchmark(const char *fileName, RoutingInst *rst) {
     ifstream finput(fileName);
@@ -20,11 +38,16 @@ int readBenchmark(const char *fileName, RoutingInst *rst) {
             // read the x,y scale of the grid
             finput >> rst->gx >> rst->gy;
             rst->numEdges = 2*rst->gx*rst->gy-rst->gx-rst->gy;
-            for
+            rst->edgeCaps = new int[rst->gx*rst->gy*2];
+            rst->edgeUtils = new int[rst->gx*rst->gy*2];
         }
         else if (command == "capacity") {
             // read the default capacity of each edge
             finput >> rst->cap;
+            for (unsigned int i=0;i<rst->gx*rst->gy*2;i++) {
+                rst->edgeCaps[i] = rst->cap;
+                rst->edgeUtils[i] = 0;
+            }
         }
         else if (command == "num") {
             finput >> command;
@@ -43,7 +66,12 @@ int readBenchmark(const char *fileName, RoutingInst *rst) {
                     }
                 }
                 // read the blockages
-                finput >> 
+                unsigned int blockages;
+                finput >> blockages;
+                for (unsigned int i=0, x1, y1, x2, y2, c;i<blockages;i++) {
+                    finput >> x1 >> y1 >> x2 >> y2 >> c;
+                    rst->edgeCaps[toEdge(x1,y1,x2,y2,rst->gx,rst->gy)] = c;
+                }
             }
             else {
                 finput.close();
