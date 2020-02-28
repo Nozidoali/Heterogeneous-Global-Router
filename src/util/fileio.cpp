@@ -25,6 +25,9 @@ int toEdge(int x1, int x2, int y1, int y2, int gx, int gy) {
     }
 }
 
+/**
+ * Read file from fileName
+ */
 int readBenchmark(const char *fileName, RoutingInst *rst) {
     ifstream finput(fileName);
     // file not opened correctly
@@ -57,6 +60,7 @@ int readBenchmark(const char *fileName, RoutingInst *rst) {
                 rst->nets = new Net[rst->numNets];
                 for (unsigned int i=0; i<rst->numNets; i++) {
                     rst->nets[i].id = i;
+                    finput >> command;
                     // read the number of pins in the net
                     finput >> rst->nets[i].numPins;
                     rst->nets[i].pins = new Point[rst->nets[i].numPins];
@@ -85,4 +89,20 @@ int readBenchmark(const char *fileName, RoutingInst *rst) {
     }
     finput.close();
     return SUCCESS;
+}
+
+int solveRouting(RoutingInst *rst){}
+int writeOutput(const char *outRouteFile, RoutingInst *rst){}
+
+/**
+ * Release the memory allocated by the constructor
+ */
+int release(RoutingInst *rst) {
+    delete [] rst->edgeCaps;
+    delete [] rst->edgeUtils;
+    for (unsigned int i=0;i<rst->numNets;i++) {
+        delete [] rst->nets[i].pins;
+    }
+    delete [] rst->nets;
+    delete rst;
 }

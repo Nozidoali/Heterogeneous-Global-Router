@@ -1,5 +1,6 @@
 // ECE556 - Copyright 2014 University of Wisconsin-Madison.  All Rights Reserved.
 
+#include "util/util.h"
 
 int main(int argc, char **argv)
 {
@@ -14,7 +15,7 @@ int main(int argc, char **argv)
  	char *outputFileName = argv[2];
 
  	/// create a new routing instance
- 	routingInst *rst = new routingInst;
+ 	RoutingInst *rst = new RoutingInst;
 	
  	/// read benchmark
  	status = readBenchmark(inputFileName, rst);
