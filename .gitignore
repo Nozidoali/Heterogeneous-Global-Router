@@ -1,1 +1,14 @@
+
+# vscode configurations
 .vscode
+
+# CMakefiles
+CMakeFiles
+cmake_install.cmake
+CMakeCache.txt
+
+# Obj
+obj
+
+# Executing Files
+*.exe

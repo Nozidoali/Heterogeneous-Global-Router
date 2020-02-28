@@ -1,8 +1,8 @@
 // ECE556 - Copyright 2014 University of Wisconsin-Madison.  All Rights Reserved.
 
 
-#ifndef ECE556_H
-#define ECE556_H
+#ifndef BASE_H
+#define BASE_H
 
 #include <stdio.h>
 
@@ -74,5 +74,7 @@
    
   } RoutingInst ;
 
-#endif // ECE556_H
+int toEdge(int x1, int y1, int x2, int y2, int gx, int gy);
+
+#endif // BASE_H
 
