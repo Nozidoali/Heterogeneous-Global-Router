@@ -1,8 +1,5 @@
 #include "fileio.h"
 
-#define SUCCESS 1
-#define FAILED 0
-
 #include <fstream>
 #include <cstring>
 #include <cassert>
@@ -73,13 +70,21 @@ int readBenchmark(const char *fileName, RoutingInst *rst) {
     return SUCCESS;
 }
 
-int release(RoutingInst *rst) {
-    delete [] rst->edgeCaps;
-    delete [] rst->edgeUtils;
-    for (int i=0;i<rst->numNets;i++) {
-        delete [] rst->nets[i].pins;
+int writeOutput(const char *outRouteFile, RoutingInst *rst) {
+    ofstream foutput(outRouteFile);
+    for(int i=0;i<rst->numNets;i++) {
+        // print the node ID in the first line
+        foutput << "n" << rst->nets[i].id << endl;
+        for(int j=0;j<rst->nets[i].nroute.numSegs;j++) {
+            Segment * segment = rst->nets[i].nroute.segments[j];
+            for(int k=0;k<segment->numEdges;k++) {
+                int edgeIndex = segment->edges[k];
+                pair<Point, Point> edge = toPoint(edgeIndex, rst->gx, rst->gy);
+                // print the edge in the correct format
+                foutput << edge.first.toString() << "-" << edge.second.toString() << endl;
+            }
+        }
+        foutput << "!" << endl;
     }
-    delete [] rst->nets;
-    delete rst;
     return SUCCESS;
 }

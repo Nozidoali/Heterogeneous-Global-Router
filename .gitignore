@@ -12,3 +12,6 @@ obj
 
 # Executing Files
 *.exe
+
+# benchmarks
+benchmarks

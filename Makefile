@@ -150,6 +150,60 @@ src/base/base.cpp.s:
 	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/base/base.cpp.s
 .PHONY : src/base/base.cpp.s
 
+src/base/point.o: src/base/point.cpp.o
+
+.PHONY : src/base/point.o
+
+# target to build an object file
+src/base/point.cpp.o:
+	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/base/point.cpp.o
+.PHONY : src/base/point.cpp.o
+
+src/base/point.i: src/base/point.cpp.i
+
+.PHONY : src/base/point.i
+
+# target to preprocess a source file
+src/base/point.cpp.i:
+	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/base/point.cpp.i
+.PHONY : src/base/point.cpp.i
+
+src/base/point.s: src/base/point.cpp.s
+
+.PHONY : src/base/point.s
+
+# target to generate assembly for a file
+src/base/point.cpp.s:
+	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/base/point.cpp.s
+.PHONY : src/base/point.cpp.s
+
+src/base/route.o: src/base/route.cpp.o
+
+.PHONY : src/base/route.o
+
+# target to build an object file
+src/base/route.cpp.o:
+	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/base/route.cpp.o
+.PHONY : src/base/route.cpp.o
+
+src/base/route.i: src/base/route.cpp.i
+
+.PHONY : src/base/route.i
+
+# target to preprocess a source file
+src/base/route.cpp.i:
+	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/base/route.cpp.i
+.PHONY : src/base/route.cpp.i
+
+src/base/route.s: src/base/route.cpp.s
+
+.PHONY : src/base/route.s
+
+# target to generate assembly for a file
+src/base/route.cpp.s:
+	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/base/route.cpp.s
+.PHONY : src/base/route.cpp.s
+
 src/main.o: src/main.cpp.o
 
 .PHONY : src/main.o
@@ -204,6 +258,33 @@ src/util/fileio.cpp.s:
 	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/util/fileio.cpp.s
 .PHONY : src/util/fileio.cpp.s
 
+src/util/solver.o: src/util/solver.cpp.o
+
+.PHONY : src/util/solver.o
+
+# target to build an object file
+src/util/solver.cpp.o:
+	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/util/solver.cpp.o
+.PHONY : src/util/solver.cpp.o
+
+src/util/solver.i: src/util/solver.cpp.i
+
+.PHONY : src/util/solver.i
+
+# target to preprocess a source file
+src/util/solver.cpp.i:
+	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/util/solver.cpp.i
+.PHONY : src/util/solver.cpp.i
+
+src/util/solver.s: src/util/solver.cpp.s
+
+.PHONY : src/util/solver.s
+
+# target to generate assembly for a file
+src/util/solver.cpp.s:
+	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/util/solver.cpp.s
+.PHONY : src/util/solver.cpp.s
+
 src/util/util.o: src/util/util.cpp.o
 
 .PHONY : src/util/util.o
@@ -243,12 +324,21 @@ help:
 	@echo "... src/base/base.o"
 	@echo "... src/base/base.i"
 	@echo "... src/base/base.s"
+	@echo "... src/base/point.o"
+	@echo "... src/base/point.i"
+	@echo "... src/base/point.s"
+	@echo "... src/base/route.o"
+	@echo "... src/base/route.i"
+	@echo "... src/base/route.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
 	@echo "... src/util/fileio.o"
 	@echo "... src/util/fileio.i"
 	@echo "... src/util/fileio.s"
+	@echo "... src/util/solver.o"
+	@echo "... src/util/solver.i"
+	@echo "... src/util/solver.s"
 	@echo "... src/util/util.o"
 	@echo "... src/util/util.i"
 	@echo "... src/util/util.s"

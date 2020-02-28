@@ -1,25 +1,18 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "../base/base.h"
-  
-/* int solveRouting(routingInst *rst)
-   This function creates a routing solution
-   input: pointer to the routing instance
-   output: 1 if successful, 0 otherwise (e.g. the data structures are not populated) 
-*/
-int solveRouting(RoutingInst *rst);
+#include "../router.h"
 
-  
-/* int release(routingInst *rst)
-   Release the memory for all the allocated data structures. 
-   Failure to release may cause memory problems after multiple runs of your program. 
-   Need to recursively delete all memory allocations from bottom to top 
-   (starting from segments then routes then individual fields within a net struct, 
-   then nets, then the fields in a routing instance, and finally the routing instance)
+/**
+ * int distance(Point * start, Point * end)
+ * measure the shortest distance between two points
+ */
+int distance(Point * start, Point * end);
 
-   output: 1 if successful, 0 otherwise 
-*/
- int release(RoutingInst *rst);
-
+/**
+ * Segment * lSegment(Point * start, Point * end);
+ * Return the L-Shape segment created to connect start and end
+ * [Memory Allocated]
+ */
+Segment * lSegment(RoutingInst * rst, Point * start, Point * end);
 #endif
