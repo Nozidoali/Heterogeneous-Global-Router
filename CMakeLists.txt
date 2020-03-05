@@ -13,6 +13,7 @@ set ( SOURCE_FILES
         src/util/util.h     src/util/util.cpp
         src/util/solver.h   src/util/solver.cpp
         src/util/fileio.h   src/util/fileio.cpp
+        src/util/RMST.h     src/util/RMST.cpp
 )
 
 set ( LIBS

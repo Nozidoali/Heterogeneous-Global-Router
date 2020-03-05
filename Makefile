@@ -231,6 +231,33 @@ src/main.cpp.s:
 	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
+src/util/RMST.o: src/util/RMST.cpp.o
+
+.PHONY : src/util/RMST.o
+
+# target to build an object file
+src/util/RMST.cpp.o:
+	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/util/RMST.cpp.o
+.PHONY : src/util/RMST.cpp.o
+
+src/util/RMST.i: src/util/RMST.cpp.i
+
+.PHONY : src/util/RMST.i
+
+# target to preprocess a source file
+src/util/RMST.cpp.i:
+	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/util/RMST.cpp.i
+.PHONY : src/util/RMST.cpp.i
+
+src/util/RMST.s: src/util/RMST.cpp.s
+
+.PHONY : src/util/RMST.s
+
+# target to generate assembly for a file
+src/util/RMST.cpp.s:
+	$(MAKE) -f CMakeFiles/ROUTER.exe.dir/build.make CMakeFiles/ROUTER.exe.dir/src/util/RMST.cpp.s
+.PHONY : src/util/RMST.cpp.s
+
 src/util/fileio.o: src/util/fileio.cpp.o
 
 .PHONY : src/util/fileio.o
@@ -333,6 +360,9 @@ help:
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/util/RMST.o"
+	@echo "... src/util/RMST.i"
+	@echo "... src/util/RMST.s"
 	@echo "... src/util/fileio.o"
 	@echo "... src/util/fileio.i"
 	@echo "... src/util/fileio.s"

@@ -24,3 +24,11 @@ Please note that you need `CMake version 2.7` and `C++14 feature`.
 ```
     Usage : ./ROUTE.exe <input_benchmark_name> <output_file_name>
 ```
+
+## Performance
+
+```
+| Date  | Version |  TWL1   |  TOF1   |  TWL2   |  TOF2  |   TWL2   |  TOF2   |
+| :---: | :-----: | :-----: | :-----: | :-----: | :----: | :------: | :-----: |
+| 4 Mar |   1.0   | 5461421 | 1657741 | 5169015 | 466521 | 14946703 | 3143019 |
+```

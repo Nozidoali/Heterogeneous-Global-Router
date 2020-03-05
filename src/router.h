@@ -17,7 +17,7 @@ public:
     Point();
     Point(int _x, int _y);
     const string toString();
-
+    bool operator == (const Point p) const;
 };
 
 /**
@@ -32,6 +32,8 @@ public:
     int numEdges ; 	/* number of edges in the segment*/
     int *edges ;  	/* array of edges representing the segment*/
 
+    int numFragment; /* number of fragments in the segment*/
+    vector<pair<Point, Point> > fragments; /* array of fragments in the segment*/
 };
 
 
@@ -106,8 +108,9 @@ extern int                  release         (RoutingInst *rst);
 /**
  * Functions ./util/util.h
  */
-extern int          distance        (Point * start, Point * end);
-extern Segment *    lSegment        (RoutingInst * rst, Point * start, Point * end);
+extern int          distance        (Point start, Point end);
+extern int          distance        (pair<Point, Point> p);
+extern Segment *    lSegment        (RoutingInst * rst, Point start, Point end);
 
 /**
  * Function ./util/solver.h
@@ -120,5 +123,12 @@ extern int          solveRouting    (RoutingInst *rst);
  */
 extern int          readBenchmark   (const char *fileName, RoutingInst *rst);
 extern int          writeOutput     (const char *outRouteFile, RoutingInst *rst);
+
+/**
+ * Functions ./util/RMST.h
+ */
+extern void *       startRMST       (RoutingInst *_rst, Net * _net);
+extern void         endRMST         (void * rmst);
+extern int          solveRMST       (void * rmst);
 
 #endif

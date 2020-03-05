@@ -62,8 +62,7 @@ int readBenchmark(const char *fileName, RoutingInst *rst) {
             }
         }
         else {
-            finput.close();
-            return FAILED;
+            continue;
         }
     }
     finput.close();
@@ -77,11 +76,9 @@ int writeOutput(const char *outRouteFile, RoutingInst *rst) {
         foutput << "n" << rst->nets[i].id << endl;
         for(int j=0;j<rst->nets[i].nroute.numSegs;j++) {
             Segment * segment = rst->nets[i].nroute.segments[j];
-            for(int k=0;k<segment->numEdges;k++) {
-                int edgeIndex = segment->edges[k];
-                pair<Point, Point> edge = toPoint(edgeIndex, rst->gx, rst->gy);
+            for(int k=0;k<segment->numFragment;k++) {
                 // print the edge in the correct format
-                foutput << edge.first.toString() << "-" << edge.second.toString() << endl;
+                foutput << segment->fragments[k].first.toString() << "-" << segment->fragments[k].second.toString() << endl;
             }
         }
         foutput << "!" << endl;

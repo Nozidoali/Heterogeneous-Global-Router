@@ -10,7 +10,7 @@ int toEdge(int x1, int y1, int x2, int y2, int gx, int gy) {
     }
     // if the edge is horizontal
     else if (y1==y2) {
-        return (x*y*(gx-1))<<1 + 1;
+        return ((x+y*(gx-1))<<1) + 1;
     }
     else {
         // no edge between two given edge
@@ -26,7 +26,7 @@ pair<Point, Point> toPoint(int edgeNum, int gx, int gy) {
     // Makesure edgeNum is a valid number
     assert(edgeNum != -1);
     // Judge if the edge is vertical or horizontal
-    DIRECT direction = edgeNum & 1 == 1? VERTICAL: HORIZONTAL;
+    DIRECT direction = edgeNum % 2 == 0? VERTICAL: HORIZONTAL;
     int value = edgeNum >> 1;
     if (direction == VERTICAL) {
         int x = value % gx;

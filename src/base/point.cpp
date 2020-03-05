@@ -18,3 +18,7 @@ const string Point::toString() {
     str = "(" + to_string(x) + "," + to_string(y) + ")";
     return str;
 }
+
+bool Point :: operator == (const Point p) const {
+    return x == p.x && y == p.y;
+}
