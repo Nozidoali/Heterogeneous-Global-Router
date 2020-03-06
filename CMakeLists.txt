@@ -7,6 +7,7 @@ set ( SOURCE_FILES
         src/router.h
 
         src/base/base.h      src/base/base.cpp
+        src/base/hgrid.h     src/base/hgrid.cpp
         src/base/point.h     src/base/point.cpp
         src/base/route.h     src/base/route.cpp
         

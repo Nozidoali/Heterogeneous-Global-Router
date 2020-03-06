@@ -9,6 +9,8 @@
  */
 int distance(Point start, Point end);
 
+int distance(pair<Point, Point> p);
+
 /**
  * Segment * lSegment(Point * start, Point * end);
  * Return the L-Shape segment created to connect start and end

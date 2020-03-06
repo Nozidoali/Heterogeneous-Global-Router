@@ -28,29 +28,37 @@ bool inGrid(RoutingInst * rst, Point * p) {
 Segment * lSegment(RoutingInst * rst, Point start, Point end) {
     // Create and allocate memory
     Segment * segment = new Segment;
-    segment->numEdges = distance(start,end);
-    segment->edges = new int [segment->numEdges];
-    int count = 0;
-    // from start to steiner point
-    for(int px=start.x;px!=end.x;) {
-        int qx = px + unitDirect(start.x, end.x);
-        segment->edges[count++] = toEdge(px,start.y,qx,start.y,rst->gx,rst->gy);
-        px = qx;
-    }
-    // from steiner point to end
-    for(int py=start.y;py!=end.y;) {
-        int qy = py + unitDirect(start.y, end.y);
-        segment->edges[count++] = toEdge(end.x,py,end.x,qy,rst->gx,rst->gy);
-        py = qy;
-    }
-    // check if the number of edge is correct
-    assert(count == segment->numEdges);
 
+    int count = 0;
+    
+    // segment->numEdges = distance(start,end);
+    // segment->edges = new int [segment->numEdges];
+
+    // from start to steiner point
+    // for(int px=start.x;px!=end.x;) {
+    //     int qx = px + unitDirect(start.x, end.x);
+    //     segment->edges[count++] = toEdge(px,start.y,qx,start.y,rst->gx,rst->gy);
+    //     px = qx;
+    // }
+
+    // from steiner point to end
+    // for(int py=start.y;py!=end.y;) {
+    //     int qy = py + unitDirect(start.y, end.y);
+    //     segment->edges[count++] = toEdge(end.x,py,end.x,qy,rst->gx,rst->gy);
+    //     py = qy;
+    // }
+
+    segment->numFragment = 0;
     // add the fragment expression of the 
-    segment->numFragment = 2;
     Point mid = Point(start.x, end.y);
-    segment->fragments.push_back(make_pair(start, mid));
-    segment->fragments.push_back(make_pair(mid, end));
+    if (start.y != end.y) {
+        segment->fragments.push_back(make_pair(start, mid));
+        segment->numFragment++;
+    }
+    if (start.x != end.x) {
+        segment->fragments.push_back(make_pair(mid, end));
+        segment->numFragment++;
+    }
     return segment;
 }
 
