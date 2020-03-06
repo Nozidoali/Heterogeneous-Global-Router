@@ -17,4 +17,14 @@ int solveNet(RoutingInst * rst, Net * net);
 */
 int solveRouting(RoutingInst *rst);
 
+class hGrid {
+public:
+    int * mem_x;
+    int * mem_y;
+    hGrid();
+
+}
+
+
+
 #endif

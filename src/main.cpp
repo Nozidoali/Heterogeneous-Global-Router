@@ -1,10 +1,13 @@
-// ECE556 - Copyright 2014 University of Wisconsin-Madison.  All Rights Reserved.
+/// ECE556 - Copyright 2014 University of Wisconsin-Madison.  All Rights Reserved.
 
 #include "router.h"
 
 using namespace std;
 int main(int argc, char **argv)
-{
+{ 
+//  std::ios::sync_with_stdio(false);
+//  std::cin.tie(0);
+
 
  	if(argc!=3){
  		printf("Usage : ./ROUTE.exe <input_benchmark_name> <output_file_name> \n");
