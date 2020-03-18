@@ -32,7 +32,7 @@ pair<Point, Point> toPoint(int edgeNum, int gx, int gy) {
         int y = value / gx;
         return make_pair(Point(x,y), Point(x,y+1));
     }
-    if (direction == HORIZONTAL) {
+    else {
         int x = value % (gx-1);
         int y = value / (gx-1);
         return make_pair(Point(x+1,y), Point(x,y));

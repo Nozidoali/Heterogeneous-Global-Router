@@ -2,22 +2,35 @@
 #define UNION_FIND_H
 
 #include <map>
+#include <algorithm>
+#include <queue>
+#include <functional>
+#include <cassert>
+#include "Basic_Solver.h"
 #include "Logic_RoutingInst.h"
-#include "Logic_HGrid.h"
-#include "Global.h"
+#include "Logic_SegTree.h"
+#include "Logic_UnionFind.h"
 
-#define ROOT 1
-
-class UnionFind {
-
+/** 
+ *  class of Hannan Grid which extrace the x and y coordinates of each pin
+ *  Descrete the grid.
+ */
+class hGrid 
+{
+    
+private:
+    int * mem_x;
+    int * mem_y;
+    map<int, int> mem_ix;
+    map<int, int> mem_iy;
+    Point * pins;
 public:
-    int * parent;
-    int size;
-    UnionFind(int _size);
-    ~UnionFind();
-    void Merge(int x,int y);
-    int Find(int x);
-    bool isMerged(int x, int y);
+    int gx;
+    int gy;
+    hGrid(RoutingInst * rst, Net * net);
+    ~hGrid();
+    Point toIndex(Point p);
+    Point toPoint(Point index);
 };
 
 struct Edge {
@@ -27,24 +40,9 @@ struct Edge {
     Edge(Point _a, Point _b, int _ia, int _ib);
 };
 
-class SegmentTree {
+class RMST_Net_Solver
+{
 private:
-    int size;
-    void update(int left, int right, int l, int r, int index, int val);
-    void build(int left, int right, int index, int * val);
-    void pushUp(int index);
-    void pushDown(int index, int length);
-    int query(int left, int right, int l, int r, int index);
-    int * sum;
-    int * lazy;
-public:
-    SegmentTree(int _size, int * val);
-    SegmentTree(int _size);
-    ~SegmentTree();
-    void Add(int left, int right, int val);
-    int Sum(int left, int right);
-};
-class RMST_Net_Solver {
 
 public:
     RoutingInst * rst;

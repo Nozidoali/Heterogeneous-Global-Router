@@ -6,7 +6,7 @@
 #include <cassert>
 using namespace std;
 #include "Logic_RoutingInst.h"
-#include "Logic_rmst.h"
+#include "Solver_rmst.h"
 #include "Global.h"
 
 /* int release(routingInst *rst)

@@ -2,6 +2,7 @@
 #define ROUTINGINST_H
 
 #include "Basic_Net.h"
+#include "Global.h"
 #include <cassert>
 
 /**
