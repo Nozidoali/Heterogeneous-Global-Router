@@ -1,6 +1,4 @@
-#include "hgrid.h"
-
-#include <algorithm>
+#include "Logic_HGrid.h"
 
 hGrid::hGrid(RoutingInst * rst, Net * net) {
     // constructing hGrid

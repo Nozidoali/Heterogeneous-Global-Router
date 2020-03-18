@@ -1,6 +1,6 @@
 /// ECE556 - Copyright 2014 University of Wisconsin-Madison.  All Rights Reserved.
 
-#include "router.h"
+#include "Interface.h"
 
 using namespace std;
 int main(int argc, char **argv)

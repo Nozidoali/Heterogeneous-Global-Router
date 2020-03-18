@@ -1,7 +1,4 @@
-#include "point.h"
-
-#include <sstream>
-using namespace std;
+#include "Basic_Point.h"
 
 Point::Point() {
     x = 0;

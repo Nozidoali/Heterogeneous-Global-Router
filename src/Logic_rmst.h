@@ -1,8 +1,10 @@
 #ifndef UNION_FIND_H
 #define UNION_FIND_H
 
-#include "../router.h"
 #include <map>
+#include "Logic_RoutingInst.h"
+#include "Logic_HGrid.h"
+#include "Global.h"
 
 #define ROOT 1
 

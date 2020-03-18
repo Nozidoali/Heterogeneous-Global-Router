@@ -1,4 +1,4 @@
-#include "RMST.h"
+#include "Logic_rmst.h"
 #include <queue>
 #include <functional>
 #include <cassert>
@@ -237,7 +237,6 @@ int solveSimple(void * rmst) {
 
 int solveRMST(void * _rmst) {
     RMST_Net_Solver * rmst = (RMST_Net_Solver *)_rmst;
-    RoutingInst * rst = ((RMST_Net_Solver *)_rmst)->rst;
     Net * net = ((RMST_Net_Solver *)_rmst)->net;
     // return if do not need to connect
     if (net->numPins <= 1) {
@@ -286,6 +285,8 @@ int solveRMST(void * _rmst) {
             int cost2 = rmst->Cost(e.a, mid2) + rmst->Cost(mid2, e.b);
             // cout << "linked" << e.a.toString() << " to " << mid2.toString() << endl;
             // cout << "linked" << e.b.toString() << " to " << mid2.toString() << endl;
+
+            // with segment tree
             if (cost1 < cost2) {
                 rmst->Connect(e.a, mid1);
                 rmst->Connect(mid1, e.b);
@@ -294,6 +295,11 @@ int solveRMST(void * _rmst) {
                 rmst->Connect(e.a, mid2);
                 rmst->Connect(mid2, e.b);
             }
+
+            // without segment tree
+            // net->nroute.segments.push_back(lSegment(rst, e.a, e.b));
+            // net->nroute.numSegs++;
+
             count++;
         }
     }

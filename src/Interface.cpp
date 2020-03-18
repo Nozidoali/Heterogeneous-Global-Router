@@ -1,9 +1,4 @@
-#include "fileio.h"
-
-#include <fstream>
-#include <cstring>
-#include <cassert>
-using namespace std;
+#include "Interface.h"
 
 int readBenchmark(const char *fileName, RoutingInst *rst) {
     ifstream finput(fileName);
@@ -69,6 +64,17 @@ int readBenchmark(const char *fileName, RoutingInst *rst) {
     return SUCCESS;
 }
 
+int solveRouting(RoutingInst *rst){
+    // for each net in the routing instance
+    for(int i=0;i<rst->numNets;i++) {
+        Net * net = rst->nets + i;
+        void * rmst = startRMST(rst, net);
+        solveRMST(rmst);
+        endRMST(rmst);
+    }
+    return SUCCESS;
+}
+
 int writeOutput(const char *outRouteFile, RoutingInst *rst) {
     ofstream foutput(outRouteFile);
     for(int i=0;i<rst->numNets;i++) {
@@ -83,5 +89,16 @@ int writeOutput(const char *outRouteFile, RoutingInst *rst) {
         }
         foutput << "!" << endl;
     }
+    return SUCCESS;
+}
+
+int release(RoutingInst *rst) {
+    delete [] rst->edgeCaps;
+    delete [] rst->edgeUtils;
+    for (int i=0;i<rst->numNets;i++) {
+        delete [] rst->nets[i].pins;
+    }
+    delete [] rst->nets;
+    delete rst;
     return SUCCESS;
 }
