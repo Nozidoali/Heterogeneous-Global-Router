@@ -19,3 +19,16 @@ const string Point::toString() {
 bool Point :: operator == (const Point p) const {
     return x == p.x && y == p.y;
 }
+
+bool Point :: operator < (const Point p) const {
+    return x < p.x && y < p.y;
+}
+
+
+Point Point :: operator + (const Point p) {
+    return Point( x+p.x, y+p.y );
+}
+
+Point Point :: operator - (const Point p) {
+    return Point( x-p.x, y-p.y );
+}

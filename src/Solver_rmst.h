@@ -6,7 +6,7 @@
 #include <queue>
 #include <functional>
 #include <cassert>
-#include "Basic_Solver.h"
+#include "Solver.h"
 #include "Logic_RoutingInst.h"
 #include "Logic_SegTree.h"
 #include "Logic_UnionFind.h"

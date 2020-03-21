@@ -23,6 +23,7 @@ public:
     int *edgeCaps; 	/* array of the actual edge capacities after considering for blockages */
     int *edgeUtils;	/* array of edge utilizations */  
 
+    int toIndex( Point a, Point b );
 };
 
 /**
@@ -45,7 +46,7 @@ int toEdge(int x1, int y1, int x2, int y2, int gx, int gy);
  * From Point a to Point b
  * Return the index of edge between two given point.
  */
-int toEdge(Point * a, Point * b, int gx, int gy);
+int toEdge(Point a, Point b, int gx, int gy);
 
 /**
  * pair<Point, Point> toPoint(int edgeNum);
@@ -58,7 +59,6 @@ pair<Point, Point> toPoint(int edgeNum, int gx, int gy);
  * measure the shortest distance between two points
  */
 int distance(Point start, Point end);
-int distance(pair<Point, Point> p);
 
 /**
  * Segment * lSegment(Point * start, Point * end);

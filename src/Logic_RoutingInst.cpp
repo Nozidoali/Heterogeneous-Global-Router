@@ -1,5 +1,9 @@
 #include "Logic_RoutingInst.h"
 
+int RoutingInst :: toIndex( Point a, Point b ) {
+    return toEdge( a, b, gx, gy );
+}
+
 int toEdge(int x1, int y1, int x2, int y2, int gx, int gy) {
     int x = (x1+x2)>>1;
     int y = (y1+y2)>>1;
@@ -17,8 +21,8 @@ int toEdge(int x1, int y1, int x2, int y2, int gx, int gy) {
     }
 }
 
-int toEdge(Point * a, Point * b, int gx, int gy) {
-    return(toEdge(a->x, a->y, b->x, b->y, gx, gy));
+int toEdge(Point a, Point b, int gx, int gy) {
+    return(toEdge(a.x, a.y, b.x, b.y, gx, gy));
 }
 
 pair<Point, Point> toPoint(int edgeNum, int gx, int gy) {
@@ -47,12 +51,6 @@ int distance(Point start, Point end) {
     return abs(start.x - end.x) + abs(start.y - end.y);
 }
 
-int distance(pair<Point, Point> p) {
-    Point start = p.first;
-    Point end = p.second;
-    return abs(start.x - end.x) + abs(start.y - end.y);
-}
-
 bool inGrid(RoutingInst * rst, Point * p) {
     if (p->x < 0 || p->x >= rst->gx)
         return false;
@@ -65,6 +63,8 @@ Segment * lSegment(RoutingInst * rst, Point start, Point end) {
     // Create and allocate memory
     Segment * segment = new Segment;
     
+    // int count = 0;
+
     // segment->numEdges = distance(start,end);
     // segment->edges = new int [segment->numEdges];
 
@@ -81,6 +81,8 @@ Segment * lSegment(RoutingInst * rst, Point start, Point end) {
     //     segment->edges[count++] = toEdge(end.x,py,end.x,qy,rst->gx,rst->gy);
     //     py = qy;
     // }
+
+    // segment->numEdges = count;
 
     segment->numFragment = 0;
     // add the fragment expression of the 

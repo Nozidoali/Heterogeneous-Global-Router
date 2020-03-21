@@ -30,10 +30,18 @@ init :
 
 clean :
 	rm -rf obj
+	if [ -f $(TARGET) ]; then rm $(TARGET); fi
 
-test :
+test : clean init $(TARGET)
 	sh ./testing/route.sh
 	sh ./testing/evaluate.sh
+
+evaluate : clean init $(TARGET)
+	sh ./testing/evaluate.sh
+
+toy : clean init $(TARGET)
+	./ROUTER.exe benchmarks/input benchmarks/output
+
 
 $(TARGET) 		: 	$(OBJ)
 	$(CC) $(CFLAGS) -o $@ $? $(LIB)

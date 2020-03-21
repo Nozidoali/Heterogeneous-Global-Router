@@ -86,8 +86,7 @@ int RMST_Net_Solver :: Cost(Point a, Point b) {
 void RMST_Net_Solver :: Connect(Point a, Point b) {
     Point ia = hgrid->toIndex(a);
     Point ib = hgrid->toIndex(b);
-    net->nroute.segments.push_back(lSegment(rst, a, b));
-    net->nroute.numSegs++;
+    net->nroute.AddSegment(lSegment(rst, a, b));
     yTree[ia.x]->Add(ia.y, ib.y, -1);
     xTree[ia.y]->Add(ia.x, ib.x, -1);
 }

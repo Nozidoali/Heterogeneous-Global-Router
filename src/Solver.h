@@ -7,7 +7,26 @@
 using namespace std;
 #include "Logic_RoutingInst.h"
 #include "Solver_rmst.h"
+#include "Solver_Weighted.h"
+
 #include "Global.h"
+
+#define SOLVER_WEIGHTED
+
+class Solver 
+{
+
+private:
+    RoutingInst * rst;
+public:
+    Solver();
+    virtual ~Solver() = 0;
+    RoutingInst * GetInst();
+    virtual int Solve() = 0;
+
+};
+const ifstream operator >> ( ifstream finput, Solver * solver );
+ofstream operator << ( ofstream foutput, Solver * solver );
 
 /* int release(routingInst *rst)
    Release the memory for all the allocated data structures. 
