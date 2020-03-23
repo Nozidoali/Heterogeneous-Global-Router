@@ -23,7 +23,12 @@ public:
     int *edgeCaps; 	/* array of the actual edge capacities after considering for blockages */
     int *edgeUtils;	/* array of edge utilizations */  
 
+    RoutingInst(){}
+
     int toIndex( Point a, Point b );
+    bool IsOverflow( Point a, Point b);
+    RoutingInst * Split( double ratio );
+    void Merge( RoutingInst * rstBackup );
 };
 
 /**

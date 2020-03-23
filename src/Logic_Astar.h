@@ -5,18 +5,22 @@
 
 // the local area to search
 struct Astar_Man {
-    int x_lower, x_upper, y_lower, y_upper;
-    int area;
+    RoutingInst * rst;
+    Point start, end;
+    int x_lower, x_upper, y_lower, y_upper, area;
+    int overflow, wirelength;
     bool * mem_visited;
-    int * mem_distance;
-    int * mem_dir;
+    int * mem_distance, * mem_dir;
+    bool * mem_map_x, * mem_map_y;
     Astar_Man (){}
-    Astar_Man ( RoutingInst * rst);
-    Astar_Man ( RoutingInst * rst, Point a, Point b , double Flex = 1 );
+    Astar_Man ( RoutingInst * _rst);
+    Astar_Man ( RoutingInst * _rst, Point start, Point end , double Flex = 1 );
     ~Astar_Man() {
-        delete mem_dir;
-        delete mem_visited;
-        delete mem_distance;
+        delete [] mem_dir;
+        delete [] mem_visited;
+        delete [] mem_distance;
+        delete [] mem_map_x;
+        delete [] mem_map_y;
     }
     bool IsValid( Point a ) {
         return a.x>=x_lower && a.x<x_upper && a.y>=y_lower && a.y<y_upper;
@@ -41,7 +45,10 @@ struct Astar_Man {
     }
 
     // Retrace
-    void retrace( RoutingInst * rst, Segment * route, Point p );
+    void retrace( Point p );
+    void Update( Segment * segment );
+    bool IsUsed( Point a, Point b );
+    bool IsFull();
 };
 
 #endif

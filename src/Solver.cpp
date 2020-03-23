@@ -89,6 +89,14 @@ int readBenchmark(const char *fileName, RoutingInst *rst) {
     string command;
     while (!finput.eof()) {
         finput >> command;
+        // allow comment
+        if (command == "#") {
+            finput >> command;
+            while (command != "#") {
+                finput >> command;
+            }
+            continue;
+        }
         if (command == "grid") {
             // read the x,y scale of the grid
             finput >> rst->gx >> rst->gy;

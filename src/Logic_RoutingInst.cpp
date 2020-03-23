@@ -98,3 +98,35 @@ Segment * lSegment(RoutingInst * rst, Point start, Point end) {
     return segment;
 }
 
+RoutingInst * RoutingInst ::  Split( double ratio ) {
+
+//======================Create New Inst=====================
+    RoutingInst * rstBackUp = new RoutingInst;
+    rstBackUp->gx = gx;
+    rstBackUp->gy = gy;
+    rstBackUp->numEdges = numEdges;
+    rstBackUp->numNets = numNets;
+    rstBackUp->nets = new Net [numNets];
+    rstBackUp->edgeCaps = new int[gx*gy*2];
+    rstBackUp->edgeUtils = new int[gx*gy*2];
+
+//======================Split Capacity======================
+    for(int i=0;i<gx*gy*2;i++) {
+        rstBackUp->edgeCaps[i] = edgeCaps[i]*ratio;
+        edgeCaps[i] -= rstBackUp->edgeCaps[i];
+        rstBackUp->edgeUtils[i] = 0;
+    }
+
+//======================Create Net==========================
+
+    return rstBackUp;
+
+}
+
+void RoutingInst :: Merge( RoutingInst * rstBackup ) {
+
+}
+
+bool RoutingInst :: IsOverflow( Point a, Point b) {
+    return edgeCaps[toIndex(a,b)] < edgeUtils[toIndex(a,b)];
+}

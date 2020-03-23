@@ -25,6 +25,10 @@ bool Point :: operator < (const Point p) const {
 }
 
 
+int Point ::  operator ^ (const Point p) const {
+    return abs( this->x - p.x ) + abs( this->y - p.y );
+}
+
 Point Point :: operator + (const Point p) {
     return Point( x+p.x, y+p.y );
 }

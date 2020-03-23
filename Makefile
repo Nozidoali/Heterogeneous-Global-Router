@@ -32,9 +32,14 @@ clean :
 	rm -rf obj
 	if [ -f $(TARGET) ]; then rm $(TARGET); fi
 
-test : clean init $(TARGET)
+project : clean init $(TARGET)
 	sh ./testing/route.sh
 	sh ./testing/evaluate.sh
+
+test: clean init $(TARGET)
+	./ROUTER.exe benchmarks/test.gr benchmarks/test.out
+	./556_eval.exe benchmarks/test.gr benchmarks/test.out 0
+	./556_eval.exe benchmarks/test.gr benchmarks/test.out 1
 
 evaluate : clean init $(TARGET)
 	sh ./testing/evaluate.sh

@@ -6,19 +6,26 @@
 #define WEIGHTED_SOLVER
 
 static inline int Weight( int capacity, int util ) {
-    int overflow = max( 0 , util-capacity );
-    return 1 + overflow;
+    return 1 + util;
 }
-
-Segment * Link( RoutingInst * rst, Point a, Point b );
-void SolveNet ( RoutingInst * rst, Net * net);
 
 class Weighted_Solver
 {
+
 private:
     RoutingInst * rst;
+    int * capacity;
+    Segment * Link ( Point a, Point b, double parameter );
+    Segment * LinkOnce ( Point a, Point b, double parameter );
+    Segment * LinkOpt ( Point a, Point b, double parameter );
+
+    void SolveNet( Net * net );
+    void ReserveCap( double ratio );
+    bool ReleaseCap( Point a, Point b, double parameter );
+
 public:
-    Weighted_Solver(RoutingInst * _rst){ rst = _rst; }
+    Weighted_Solver( RoutingInst * _rst );
+    ~Weighted_Solver();
     void Solve();
 };
 

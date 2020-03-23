@@ -15,6 +15,6 @@ public:
     Point *pins ; 		/* array of pins (or terminals) of the net. */
     Route nroute ;		/* stored route for the net. */
 
+    void Update( Segment * segment);
 };
-
 #endif
