@@ -36,6 +36,10 @@ project : clean init $(TARGET)
 	sh ./testing/route.sh
 	sh ./testing/evaluate.sh
 
+leak:  clean init $(TARGET)
+	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./ROUTER.exe benchmarks/adaptec1.gr benchmarks/adaptec1.out
+
+
 test: clean init $(TARGET)
 	./ROUTER.exe benchmarks/test.gr benchmarks/test.out
 	./556_eval.exe benchmarks/test.gr benchmarks/test.out 0

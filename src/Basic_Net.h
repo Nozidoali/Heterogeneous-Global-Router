@@ -16,5 +16,7 @@ public:
     Route nroute ;		/* stored route for the net. */
 
     void Update( Segment * segment);
+    bool operator < ( const Net & net ) const { return numPins < net.numPins; }
 };
+
 #endif

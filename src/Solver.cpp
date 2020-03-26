@@ -191,6 +191,11 @@ int release(RoutingInst *rst) {
     delete [] rst->edgeCaps;
     delete [] rst->edgeUtils;
     for (int i=0;i<rst->numNets;i++) {
+        for(int j=0;j<rst->nets[i].nroute.numSegs;j++) {
+            rst->nets[i].nroute.segments[j]->fragments.clear();
+            delete rst->nets[i].nroute.segments[j];
+        }
+        rst->nets[i].nroute.segments.clear();
         delete [] rst->nets[i].pins;
     }
     delete [] rst->nets;

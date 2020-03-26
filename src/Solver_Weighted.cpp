@@ -4,6 +4,7 @@
 #include <queue>
 #include <iostream>
 #include <map>
+#include <algorithm>
 using namespace std;
 
 typedef pair<int, Point> DIS_POINT;
@@ -16,10 +17,7 @@ typedef pair<int, Point> DIS_POINT;
  */
 Segment * Weighted_Solver :: Link( Point a, Point b, double _parameter ) {
 
-    //
-    double parameter = _parameter;
-
-    Segment * segment = LinkOpt( a, b, 3 ); 
+    Segment * segment = LinkOpt( a, b, _parameter ); 
 
     if (segment != NULL)
         return segment;
@@ -175,7 +173,7 @@ struct Edge {
     Edge(Point _a, Point _b, int _ia, int _ib);
 };
 
-void Weighted_Solver :: SolveNet ( Net * net) {
+void Weighted_Solver :: SolveNet ( Net * net, double paramter ) {
     
     // Declare a priority queue to maintain the MST
     priority_queue<Edge> queue;
@@ -209,7 +207,7 @@ void Weighted_Solver :: SolveNet ( Net * net) {
             Point b = e.b;
 
 // =================================Start=================================
-            Segment * segment = Link( a, b, 1.0 );
+            Segment * segment = Link( a, b, paramter );
             
             net->nroute.AddSegment( segment );
 // =================================End=================================
@@ -271,19 +269,47 @@ bool Weighted_Solver :: ReleaseCap( Point a, Point b, double parameter ) {
     return true;
 }
 
+void Weighted_Solver :: Route( double parameter ) {
+    // initial solution
+    for(int i=0;i<rst->numNets;i++) {
+        cerr << "Route Net: " << i+1 << " / " << rst->numNets << "\r";
+        fflush(stderr);
+        Net * net = rst->nets + i;
+        SolveNet( net, parameter );
+    }
+}
+
+void Weighted_Solver :: ReRoute( double parameter ) {
+    for(int i=0;i<rst->numNets;i++) {
+        cerr << "Reroute Net: " << i+1 << " / " << rst->numNets << "\r";
+        fflush(stderr);
+        Net * net = rst->nets + i;
+        for(int j=0;j<net->nroute.numSegs;j++) {
+            Point start = net->nroute.segments[j]->p1;
+            Point end = net->nroute.segments[j]->p2;
+            for(int k=0;k<net->nroute.segments[j]->numFragment;k++) {
+                pair<Point, Point> frag = net->nroute.segments[j]->fragments[k];
+                for( Point p=frag.first; !(p==frag.second); p=p+UnitDirect(frag.first,frag.second) )
+                    rst->edgeUtils[rst->toIndex(p, p+UnitDirect(frag.first,frag.second))]--;
+            }
+            delete net->nroute.segments[j];
+            net->nroute.segments[j] = Link(start, end, parameter);
+        }
+    }
+}
+
 void Weighted_Solver :: Solve() {
 
     // start by reserve some of the capacity.   
     ReserveCap( 0 );
 
-    // initial solution
-    for(int i=0;i<rst->numNets;i++) {
-        cerr << "Net: " << i+1 << " / " << rst->numNets << "\r";
-        fflush(stderr);
-        Net * net = rst->nets + i;
-        SolveNet( net );
-    }
+    Route( 1 );
 
+    cerr << endl;
+
+    sort(rst->nets, rst->nets + rst->numNets);
+    ReRoute( 2 );
+    ReRoute( 3 );
 }
 
 Weighted_Solver :: Weighted_Solver( RoutingInst * _rst ) {

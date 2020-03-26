@@ -19,7 +19,7 @@ private:
     Segment * LinkOnce ( Point a, Point b, double parameter );
     Segment * LinkOpt ( Point a, Point b, double parameter );
 
-    void SolveNet( Net * net );
+    void SolveNet( Net * net, double parameter );
     void ReserveCap( double ratio );
     bool ReleaseCap( Point a, Point b, double parameter );
 
@@ -27,6 +27,8 @@ public:
     Weighted_Solver( RoutingInst * _rst );
     ~Weighted_Solver();
     void Solve();
+    void Route( double parameter );
+    void ReRoute( double parameter );
 };
 
 #endif

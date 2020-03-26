@@ -17,12 +17,14 @@ public:
     Point();
     Point(int _x, int _y);
     const string toString();
-    bool operator == (const Point p) const;
-    bool operator < (const Point p) const;
-    int operator ^ (const Point p) const;
-    Point operator + (const Point p);
-    Point operator - (const Point p);
+    bool operator == (const Point & p) const;
+    bool operator < (const Point & p) const;
+    int operator ^ (const Point &p) const;
+    Point operator + (const Point & p);
+    Point operator - (const Point & p);
 };
+
+Point UnitDirect( Point a, Point b );
 
 
 #endif
