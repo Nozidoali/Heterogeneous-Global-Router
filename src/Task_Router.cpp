@@ -1,4 +1,5 @@
 #include "Task_Router.h"
+#include <thread>
 
 RouterTask :: RouterTask( RoutingInst * _rst ) {
     rst = _rst;
@@ -43,6 +44,10 @@ void RouterTask :: Solve() {
     }
 
 #ifndef DEBUG
+    cout << endl;
+#endif
+
+#ifndef DEBUG
     cout << "======Clearing Tasks======" << endl;
 #endif
 
@@ -54,6 +59,10 @@ void RouterTask :: Solve() {
         fflush(stdout);
 #endif
     }
+    
+#ifndef DEBUG
+    cout << endl;
+#endif
 
 #ifndef DEBUG
     cout << "======ReRouting Tasks======" << endl;

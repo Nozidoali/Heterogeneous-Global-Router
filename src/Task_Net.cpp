@@ -5,6 +5,8 @@
 #include <iostream>
 #include <map>
 #include <algorithm>
+#include <thread>
+
 
 #include "Logic_UnionFind.h"
 struct Edge {
@@ -56,11 +58,40 @@ NetTask :: ~NetTask() {
     tasks.clear();
 }
 
+static void SolveLocal( vector<PinsTask *> tasks, int start, int end ) {
+    for(int i=start;i<end;i++) {
+        tasks[i]->Solve();
+    }
+} 
+
 void NetTask :: Solve() {
+
+#ifdef MULTI_THREAD
+    int size = net->numPins - 1;
+
+    int numThread = 8;
+    int steps = size / numThread;
+    thread * workers[ numThread ];
+
+    // assign the working region of workers
+    for(int i=0;i<numThread;i++) {
+        int start = i*steps;
+        int end = i==numThread-1 ? size : (i+1)*steps; 
+        workers[i] = new thread ( SolveLocal, tasks, start, end );
+    }
+    
+    // join all the threads together
+    for(int i=0;i<numThread;i++) {
+        workers[i]->join();
+    }
+#endif
+
     for(int i=0;i<net->numPins-1;i++) {
         tasks[i]->Solve();
     }
+    
 }
+
 
 void NetTask :: Remove() {
     for(int i=0;i<net->numPins-1;i++) {
