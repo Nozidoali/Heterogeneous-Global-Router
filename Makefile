@@ -37,7 +37,7 @@ project : clean init $(TARGET)
 	sh ./testing/evaluate.sh
 
 leak:  clean init $(TARGET)
-	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./ROUTER.exe benchmarks/adaptec1.gr benchmarks/adaptec1.out
+	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./ROUTER.exe benchmarks/test.gr benchmarks/test.out
 
 
 test: clean init $(TARGET)

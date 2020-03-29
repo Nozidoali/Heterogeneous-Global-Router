@@ -43,7 +43,6 @@ int main(int argc, char **argv)
  		release(rst);
  		return 1;
  	}
-
  	release(rst);
  	printf("\nDONE!\n");	
  	return 0;

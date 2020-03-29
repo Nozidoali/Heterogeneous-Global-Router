@@ -167,6 +167,11 @@ int solveRouting(RoutingInst *rst){
     Weighted_Solver solver( rst );
     solver.Solve();
     return SUCCESS;
+#else
+    RouterTask task( rst );
+    task.Solve();
+    task.Save();
+    return SUCCESS;
 #endif
 }
 
@@ -177,6 +182,7 @@ int writeOutput(const char *outRouteFile, RoutingInst *rst) {
         foutput << "n" << rst->nets[i].id << endl;
         for(int j=0;j<rst->nets[i].nroute.numSegs;j++) {
             Segment * segment = rst->nets[i].nroute.segments[j];
+            assert( segment );
             for(int k=0;k<segment->numFragment;k++) {
                 // print the edge in the correct format
                 foutput << segment->fragments[k].first.toString() << "-" << segment->fragments[k].second.toString() << endl;

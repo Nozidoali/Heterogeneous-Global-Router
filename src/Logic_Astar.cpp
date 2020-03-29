@@ -33,7 +33,7 @@ Astar_Man :: Astar_Man ( RoutingInst * _rst, Point a, Point b , double Flex ) {
     assert( x_range >= 0.0 );
     assert( y_range >= 0.0 );
     x_lower = max( 0.0, x_mean-x_range ); 
-    x_upper = min( (double)rst->gx, x_mean+x_range+1 );            
+    x_upper = min( (double)rst->gx, x_mean+x_range+1 );
     assert( x_lower < x_upper );
     y_lower = max( 0.0, y_mean-y_range ); 
     y_upper = min( (double)rst->gy, y_mean+y_range+1 );
@@ -126,7 +126,21 @@ void Astar_Man :: retrace( Point p ) {
  * 
  */
 void Astar_Man :: Update( Segment * segment ) {
-
+//=========================Update Util==============================    
+    for(int y=y_lower;y<y_upper;y++) 
+        for(int x=x_lower;x<x_upper;x++)
+        {
+            Point start(x,y);
+            Point x_end = start + Point(1,0);
+            Point y_end = start + Point(0,1);
+            if (mem_map_x[ToIndex(Point(x,y))]) {
+                ++rst->edgeUtils[rst->toIndex(start, x_end)];
+            }
+            if (mem_map_y[ToIndex(Point(x,y))]) {
+                ++rst->edgeUtils[rst->toIndex(start, y_end)];
+            }
+        }
+        
 //=========================Update Fragment==========================    
     // for each mem_x
     for(int y=y_lower;y<y_upper;y++)
@@ -135,17 +149,16 @@ void Astar_Man :: Update( Segment * segment ) {
         while (pos<x_upper) {
             if (mem_map_x[ToIndex(Point(pos,y))]) {
                 Point start(pos, y);
-
                 // find the end point of the fragment
-                for(;pos<x_upper && mem_map_x[ToIndex(Point(pos,y))];pos++){}
+                for(;pos<x_upper && mem_map_x[ToIndex(Point(pos,y))];pos++) {
+                    // update overflow and wirelength
+                    wirelength++;
+                    overflow+= rst->IsOverflow( Point(pos, y), Point(pos+1,y) );
+                }
                 Point end(pos, y);
 
                 // add the fragment and update 
                 segment->AddFragment( start, end );
-
-                // update overflow and wirelength
-                wirelength++;
-                overflow += rst->IsOverflow( start, end );
 
             }
             else {
@@ -164,7 +177,11 @@ void Astar_Man :: Update( Segment * segment ) {
                 Point start(x, pos);
 
                 // find the end point of the fragment
-                for(;pos<y_upper && mem_map_y[ToIndex(Point(x,pos))];pos++){}
+                for(;pos<y_upper && mem_map_y[ToIndex(Point(x,pos))];pos++) {
+                    // update overflow and wirelength
+                    wirelength++;
+                    overflow+= rst->IsOverflow( Point(x,pos), Point(x,pos+1) );
+                }
                 Point end(x, pos);
 
                 // add the fragment and update 
@@ -180,20 +197,4 @@ void Astar_Man :: Update( Segment * segment ) {
             }
         }
     }
-
-//=========================Update Util==============================    
-    for(int y=y_lower;y<y_upper;y++) 
-        for(int x=x_lower;x<x_upper;x++)
-        {
-            Point start(x,y);
-            Point x_end = start + Point(1,0);
-            Point y_end = start + Point(0,1);
-            if (mem_map_x[ToIndex(Point(x,y))]) {
-                ++rst->edgeUtils[rst->toIndex(start, x_end)];
-            }
-            if (mem_map_y[ToIndex(Point(x,y))]) {
-                ++rst->edgeUtils[rst->toIndex(start, y_end)];
-            }
-        }
-
 }

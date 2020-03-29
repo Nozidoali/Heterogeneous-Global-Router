@@ -8,10 +8,10 @@ using namespace std;
 #include "Logic_RoutingInst.h"
 #include "Solver_rmst.h"
 #include "Solver_Weighted.h"
-
+#include "Task_Router.h"
 #include "Global.h"
 
-#define SOLVER_WEIGHTED
+// #define SOLVER_WEIGHTED
 
 class Solver 
 {

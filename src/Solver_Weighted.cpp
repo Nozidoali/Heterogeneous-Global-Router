@@ -1,6 +1,7 @@
 #include "Solver_Weighted.h"
 #include "Logic_Astar.h"
 #include "Logic_UnionFind.h"
+#include "Task_Pins.h"
 #include <queue>
 #include <iostream>
 #include <map>
@@ -208,7 +209,6 @@ void Weighted_Solver :: SolveNet ( Net * net, double paramter ) {
 
 // =================================Start=================================
             Segment * segment = Link( a, b, paramter );
-            
             net->nroute.AddSegment( segment );
 // =================================End=================================
         }
@@ -304,12 +304,13 @@ void Weighted_Solver :: Solve() {
     ReserveCap( 0 );
 
     Route( 1 );
-
     cerr << endl;
 
     sort(rst->nets, rst->nets + rst->numNets);
-    ReRoute( 2 );
-    ReRoute( 3 );
+    // ReRoute( 2 );
+    cerr << endl;
+    // ReRoute( 3 );
+    cerr << endl;
 }
 
 Weighted_Solver :: Weighted_Solver( RoutingInst * _rst ) {

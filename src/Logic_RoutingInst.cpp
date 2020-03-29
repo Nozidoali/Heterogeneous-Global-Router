@@ -1,6 +1,8 @@
 #include "Logic_RoutingInst.h"
 
 int RoutingInst :: toIndex( Point a, Point b ) {
+    // assert( a.x >= 0 && a.y>=0 && b.x >= 0 && b.y >= 0 );
+    // assert( a.x < gx && b.x < gx && a.y < gy && b.y < gy );
     return toEdge( a, b, gx, gy );
 }
 

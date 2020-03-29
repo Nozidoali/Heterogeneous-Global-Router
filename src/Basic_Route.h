@@ -14,6 +14,7 @@ public:
     int numSegs ;  	/* number of segments in a route*/
     vector<Segment *> segments ;  /* an array of segments (note, a segment may be flat, L-shaped or any other shape, based on your preference */
     void AddSegment(Segment * segment);
+    void AddSegment(Segment segment);
     Route(){ numSegs = 0; }
 };
 
