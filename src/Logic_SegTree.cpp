@@ -28,8 +28,8 @@ SegmentTree :: SegmentTree(int _size, int * val) {
 }
 
 SegmentTree :: ~SegmentTree() {
-    delete [] sum;
-    delete [] lazy;
+    delete [] sum;  sum = NULL;
+    delete [] lazy; lazy = NULL;
 }
 
 int SegmentTree :: Sum(int left, int right) {

@@ -194,17 +194,19 @@ int writeOutput(const char *outRouteFile, RoutingInst *rst) {
 }
 
 int release(RoutingInst *rst) {
-    delete [] rst->edgeCaps;
-    delete [] rst->edgeUtils;
+    delete [] rst->edgeCaps;    rst->edgeCaps = NULL;
+    delete [] rst->edgeUtils;   rst->edgeUtils = NULL;
     for (int i=0;i<rst->numNets;i++) {
         for(int j=0;j<rst->nets[i].nroute.numSegs;j++) {
             rst->nets[i].nroute.segments[j]->fragments.clear();
             delete rst->nets[i].nroute.segments[j];
+            rst->nets[i].nroute.segments[j] = NULL;
         }
         rst->nets[i].nroute.segments.clear();
         delete [] rst->nets[i].pins;
+        rst->nets[i].pins = NULL;
     }
-    delete [] rst->nets;
-    delete rst;
+    delete [] rst->nets;    rst->nets = NULL;   
+    delete rst;             rst = NULL;
     return SUCCESS;
 }

@@ -8,10 +8,10 @@ class RouterTask
 
 private:
     RoutingInst * rst;      // the routing instance
-    vector<NetTask *> tasks;
+    vector<NetTask> tasks;
 
 public:
-    RouterTask(){}
+    RouterTask(){ rst = NULL; }
     RouterTask( RoutingInst * rst );
     ~RouterTask();
 

@@ -3,25 +3,10 @@
 
 RouterTask :: RouterTask( RoutingInst * _rst ) {
     rst = _rst;
-
-#ifndef DEBUG
-    cout << "======Initializing Tasks======" << endl;
-#endif
-
-    tasks.reserve( rst->numNets );
-
+    sort(rst->nets, rst->nets + rst->numNets);
     for(int i=0;i<rst->numNets;i++) {
-        tasks.push_back( new NetTask( rst, rst->nets+i ) );
-
-#ifndef DEBUG
-        cout << i+1 << " / " << rst->numNets << "\r";
-        fflush(stdout);
-#endif
+        tasks.push_back( NetTask( rst, rst->nets+i ) );
     }
-
-#ifndef DEBUG
-    cout << endl;
-#endif
 }
 
 RouterTask :: ~RouterTask() {
@@ -29,75 +14,33 @@ RouterTask :: ~RouterTask() {
 }
 
 void RouterTask :: Solve() {
-
-#ifndef DEBUG
-    cout << "======Routing Tasks======" << endl;
-#endif
-
-    for(int i=0;i<rst->numNets;i++) {
-        tasks[i]->Solve();
-
-#ifndef DEBUG
-        cout << i+1 << " / " << rst->numNets << "\r";
-        fflush(stdout);
-#endif
+    for(auto& task : tasks) {
+        task.Solve( 1 );
     }
-
-#ifndef DEBUG
-    cout << endl;
-#endif
-
-#ifndef DEBUG
-    cout << "======Clearing Tasks======" << endl;
-#endif
-
-    for(int i=0;i<rst->numNets;i++) {
-        tasks[i]->Remove();
-
-#ifndef DEBUG
-        cout << i+1 << " / " << rst->numNets << "\r";
-        fflush(stdout);
-#endif
+    for(auto& task : tasks) {
+        if ( task.isOverflow() ) {
+            task.Remove();
+            task.Solve( 2 );
+        }
+        if ( task.isOverflow() ) {
+            task.Remove();
+            task.Solve( 4 );
+        }
     }
-    
-#ifndef DEBUG
-    cout << endl;
-#endif
-
-#ifndef DEBUG
-    cout << "======ReRouting Tasks======" << endl;
-#endif
-
-    for(int i=0;i<rst->numNets;i++) {
-        tasks[i]->Solve();
-
-#ifndef DEBUG
-        cout << i+1 << " / " << rst->numNets << "\r";
-        fflush(stdout);
-#endif
+    for(auto& task : tasks) {
+        if ( !task.isOverflow() ) {
+            task.Remove();
+            task.Solve( 1 );
+        }
+        if ( !task.isOverflow() ) {
+            task.Remove();
+            task.Solve( 2 );
+        }
     }
-
-#ifndef DEBUG
-    cout << endl;
-#endif
 }
 
 void RouterTask :: Save() {
-
-#ifndef DEBUG
-    cout << "======Saving Solutions======" << endl;
-#endif
-
-    for(int i=0;i<rst->numNets;i++) {
-        tasks[i]->Save();
-
-#ifndef DEBUG
-        cout << i+1 << " / " << rst->numNets << "\r";
-        fflush(stdout);
-#endif
+    for(auto& task : tasks) {
+        task.Save();
     }
-
-#ifndef DEBUG
-    cout << endl;
-#endif
 }

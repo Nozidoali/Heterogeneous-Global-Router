@@ -26,10 +26,11 @@ Astar_Man :: Astar_Man ( RoutingInst * _rst, Point a, Point b , double Flex ) {
     overflow = wirelength = 0;
     start = a;
     end = b;
+    assert( Flex >=1 );
     double x_mean = ( min(a.x, b.x)+max(a.x, b.x) ) / 2.0;
-    double x_range = (((double)( max(a.x, b.x)-min(a.x, b.x) ) / 2.0 ) + Flex);
+    double x_range = (((double)( max(a.x, b.x)-min(a.x, b.x) ) / 2.0 + 2) * Flex);
     double y_mean = ( min(a.y, b.y)+max(a.y, b.y) ) / 2.0;
-    double y_range = (((double)( max(a.y, b.y)-min(a.y, b.y) ) / 2.0 ) + Flex);
+    double y_range = (((double)( max(a.y, b.y)-min(a.y, b.y) ) / 2.0 + 2) * Flex);
     assert( x_range >= 0.0 );
     assert( y_range >= 0.0 );
     x_lower = max( 0.0, x_mean-x_range ); 
@@ -159,7 +160,6 @@ void Astar_Man :: Update( Segment * segment ) {
 
                 // add the fragment and update 
                 segment->AddFragment( start, end );
-
             }
             else {
                 ++pos;
@@ -186,11 +186,6 @@ void Astar_Man :: Update( Segment * segment ) {
 
                 // add the fragment and update 
                 segment->AddFragment( start, end );
-
-                // update overflow and wirelength
-                wirelength++;
-                overflow += rst->IsOverflow( start, end );
-
             }
             else {
                 ++pos;

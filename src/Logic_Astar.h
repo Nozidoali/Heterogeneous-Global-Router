@@ -16,11 +16,11 @@ struct Astar_Man {
     Astar_Man ( RoutingInst * _rst);
     Astar_Man ( RoutingInst * _rst, Point start, Point end , double Flex = 1 );
     ~Astar_Man() {
-        delete [] mem_dir;
-        delete [] mem_visited;
-        delete [] mem_distance;
-        delete [] mem_map_x;
-        delete [] mem_map_y;
+        delete [] mem_dir;      mem_dir = NULL;
+        delete [] mem_visited;  mem_visited = NULL;
+        delete [] mem_distance; mem_distance = NULL;
+        delete [] mem_map_x;    mem_map_x = NULL;
+        delete [] mem_map_y;    mem_map_y = NULL;
     }
     bool IsValid( Point a ) {
         return a.x>=x_lower && a.x<x_upper && a.y>=y_lower && a.y<y_upper;

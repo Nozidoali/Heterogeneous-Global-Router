@@ -19,15 +19,20 @@ private:
     Segment * segment;      // the current solution of the 2-pins network
 
     int overflow;           // the current overflow 
+    int wirelength;         // the current wirelength
 
 public:
-    PinsTask(){}
+    PinsTask(){ rst = NULL; net = NULL; segment = NULL; }
     PinsTask( RoutingInst * _rst, Net * _net, Point _start, Point _end );
     ~PinsTask();
     Segment * Route( double parameter, bool isOpt );
     void Save();
-    void Solve();
+    void Solve( double parameter = 1 );
     void Remove();
+    bool isOverflow()   { return overflow > 0; }
+    bool isDone()       { return segment != NULL; }
+    int getOverflow()   { return overflow; }
+    int getWireLength() { return wirelength; }
 
 };
 

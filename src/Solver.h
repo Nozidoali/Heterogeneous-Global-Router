@@ -6,8 +6,6 @@
 #include <cassert>
 using namespace std;
 #include "Logic_RoutingInst.h"
-#include "Solver_rmst.h"
-#include "Solver_Weighted.h"
 #include "Task_Router.h"
 #include "Global.h"
 

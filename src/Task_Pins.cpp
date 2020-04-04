@@ -10,7 +10,9 @@ PinsTask :: PinsTask( RoutingInst * _rst, Net * _net, Point _start, Point _end )
 
 // initialization
     overflow    =   0;
+    wirelength  =   0;
 
+    segment = NULL;
 }
 
 PinsTask :: ~PinsTask() {
@@ -23,22 +25,21 @@ static inline int Weight( int capacity, int util ) {
 
 typedef pair<int, Point> DIS_POINT;
 
-void PinsTask :: Solve() {
+void PinsTask :: Solve( double parameter ) {
 
-    segment = Route( 2, true );
+    segment = Route( parameter, true );
 
     if( segment == NULL )
-        segment = Route( 0, false );
+        segment = Route( 1, false );
     
     assert( segment );
 
 }
 
 void PinsTask :: Remove() {
-    for(int i=0;i<segment->numFragment;i++) {
-        pair<Point, Point> frag = segment->fragments[i];
-            for( Point p=frag.first; !(p==frag.second); p=p+UnitDirect(frag.first,frag.second) )
-                rst->edgeUtils[rst->toIndex(p, p+UnitDirect(frag.first,frag.second))]--;        
+    for(auto& frag : segment->fragments) {
+        for( Point p=frag.first; !(p==frag.second); p=p+UnitDirect(frag.first,frag.second) )
+            rst->edgeUtils[rst->toIndex(p, p+UnitDirect(frag.first,frag.second))]--;        
     }
     delete segment;
     segment = NULL;
@@ -74,7 +75,9 @@ Segment * PinsTask :: Route( double parameter, bool isOpt ) {
         if (target.second == end) {
             pMan->retrace( end );
             pMan->Update( seg );
-            delete pMan;
+            overflow = pMan->overflow;
+            wirelength = pMan->wirelength;
+            delete pMan; pMan = NULL;
             return seg;
         }
         for(int i=0;i<4;i++) {
@@ -108,8 +111,8 @@ Segment * PinsTask :: Route( double parameter, bool isOpt ) {
             }
         }
     }
-    delete seg;
-    delete pMan;
+    delete seg;     seg = NULL;
+    delete pMan;    pMan = NULL;
     return NULL;
 }
 

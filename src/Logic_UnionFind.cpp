@@ -1,4 +1,5 @@
 #include "Logic_UnionFind.h"
+#include <cstdlib>
 
 UnionFind :: UnionFind(int _size) {
     size = _size;
@@ -9,7 +10,7 @@ UnionFind :: UnionFind(int _size) {
 }
 
 UnionFind :: ~UnionFind() {
-    delete [] parent;
+    delete [] parent;   parent = NULL;
 }
 
 void UnionFind :: Merge(int x, int y) {
