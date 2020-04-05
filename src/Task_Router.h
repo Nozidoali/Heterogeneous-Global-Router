@@ -1,6 +1,6 @@
 #ifndef TASK_ROUTER_H
 #define TASK_ROUTER_H
-#include "Logic_RoutingInst.h"
+#include "Basic_RoutingInst.h"
 #include "Task_Net.h"
 
 class RouterTask

@@ -1,7 +1,7 @@
 #ifndef TASK_PINS_H
 #define TASK_PINS_H
 
-#include "Logic_RoutingInst.h"
+#include "Basic_RoutingInst.h"
 #include "Logic_Astar.h"
 #include <queue>
 #include <iostream>
@@ -20,19 +20,40 @@ private:
 
     int overflow;           // the current overflow 
     int wirelength;         // the current wirelength
+    int difficulty;         // the difficulty for non-overlap route
 
 public:
+
+//=================================Constructor============================== //
     PinsTask(){ rst = NULL; net = NULL; segment = NULL; }
     PinsTask( RoutingInst * _rst, Net * _net, Point _start, Point _end );
     ~PinsTask();
-    Segment * Route( double parameter, bool isOpt );
+
+//====================================Save================================== //
     void Save();
-    void Solve( double parameter = 1 );
+    void SaveUtil();
+
+//====================================Solve================================= //
+    Segment * Route( double parameter, bool isOpt = false );
+    void Solve();
+    void TryHarder();
+
+//====================================Clean================================= //
+    void Clean();
     void Remove();
-    bool isOverflow()   { return overflow > 0; }
-    bool isDone()       { return segment != NULL; }
-    int getOverflow()   { return overflow; }
-    int getWireLength() { return wirelength; }
+
+//=================================Information============================== //
+    bool isOverflow()   const   { return overflow > 0; }
+    bool isDone()       const   { return segment != NULL; }
+    int getOverflow()   const   { return overflow; }
+    int getWireLength() const   { return wirelength; }
+    int getArea()       const   { return abs(start.x-end.x)*(start.y-end.y); }
+    int getDifficulty() const   { return difficulty; }
+
+    Segment * getSolution() const { return segment; }
+
+//=================================Operators================================ //
+    bool operator < ( const PinsTask & task ) const { return getArea() < task.getArea(); }
 
 };
 

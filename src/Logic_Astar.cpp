@@ -10,13 +10,13 @@ Astar_Man :: Astar_Man ( RoutingInst * _rst) {
     area = (y_upper-y_lower)*(x_upper-x_lower);
     mem_distance = new int[area];
     mem_visited = new bool[area];
-    mem_dir = new int[area];
+    mem_dir = new DIRECT[area];
     mem_map_x = new bool[area];
     mem_map_y = new bool[area];
     for(int i=0;i<area;i++) {
         mem_visited[i] = false;
         mem_distance[i] = -1;
-        mem_dir[i] = -1; // -1 marks start point
+        mem_dir[i] = NONE; // NONE marks start point
         mem_map_x[i] = mem_map_y[i] = false;
    }
 }
@@ -26,11 +26,11 @@ Astar_Man :: Astar_Man ( RoutingInst * _rst, Point a, Point b , double Flex ) {
     overflow = wirelength = 0;
     start = a;
     end = b;
-    assert( Flex >=1 );
+    assert( Flex >=0 );
     double x_mean = ( min(a.x, b.x)+max(a.x, b.x) ) / 2.0;
-    double x_range = (((double)( max(a.x, b.x)-min(a.x, b.x) ) / 2.0 + 2) * Flex);
+    double x_range = (((double)( max(a.x, b.x)-min(a.x, b.x) ) / 2.0 + Flex) * 1);
     double y_mean = ( min(a.y, b.y)+max(a.y, b.y) ) / 2.0;
-    double y_range = (((double)( max(a.y, b.y)-min(a.y, b.y) ) / 2.0 + 2) * Flex);
+    double y_range = (((double)( max(a.y, b.y)-min(a.y, b.y) ) / 2.0 + Flex) * 1);
     assert( x_range >= 0.0 );
     assert( y_range >= 0.0 );
     x_lower = max( 0.0, x_mean-x_range ); 
@@ -42,15 +42,46 @@ Astar_Man :: Astar_Man ( RoutingInst * _rst, Point a, Point b , double Flex ) {
     area = (y_upper-y_lower)*(x_upper-x_lower);
     mem_distance = new int[area];
     mem_visited = new bool[area];
-    mem_dir = new int[area];
+    mem_dir = new DIRECT[area];
     mem_map_x = new bool[area];
     mem_map_y = new bool[area];
     for(int i=0;i<area;i++) {
         mem_visited[i] = false;
         mem_distance[i] = -1;
-        mem_dir[i] = -1; // -1 marks start point
+        mem_dir[i] = NONE; // -1 marks start point
         mem_map_x[i] = mem_map_y[i] = false;
     }
+    assert( IsValid(start) );
+    assert( IsValid(end) );
+}
+
+Astar_Man :: ~Astar_Man() {
+    delete [] mem_dir;      mem_dir = NULL;
+    delete [] mem_visited;  mem_visited = NULL;
+    delete [] mem_distance; mem_distance = NULL;
+    delete [] mem_map_x;    mem_map_x = NULL;
+    delete [] mem_map_y;    mem_map_y = NULL;
+}
+bool Astar_Man :: IsValid( Point a ) {
+    return a.x>=x_lower && a.x<x_upper && a.y>=y_lower && a.y<y_upper;
+}
+// Find the index coordinated with respect to the region
+int Astar_Man :: ToIndex( Point a ) {
+    return (a.x-x_lower) + (a.y-y_lower)*(x_upper-x_lower);
+}
+void Astar_Man :: visit( Point a ) {
+    mem_visited[ToIndex(a)] = true;
+}
+bool Astar_Man :: isVisited( Point a ) {
+    return mem_visited[ToIndex(a)];
+}
+bool Astar_Man :: go( Point a, DIRECT direct, int cost ) {
+    bool ret = cost < mem_dir[ToIndex(a)] || mem_dir[ToIndex(a)] == NONE;
+    if (ret) {
+        mem_dir[ToIndex(a)] = direct;
+        mem_distance[ToIndex(a)] = cost;
+    }
+    return ret;
 }
 
 /**
@@ -76,6 +107,8 @@ bool Astar_Man :: IsUsed( Point a, Point b ) {
         Point ret(min( a.x, b.x ), a.y);
         return mem_map_x[ToIndex(ret)];
     }
+    assert( false );
+    return false;
 }
 
 /**
@@ -85,25 +118,25 @@ bool Astar_Man :: IsUsed( Point a, Point b ) {
  * retrace the route from the start point to the end
  * note that this is implemented recursively
  * 
+ * the record is stored in mem_map
  */
 void Astar_Man :: retrace( Point p ) {
-    Point dir[4] = {Point(1,0),Point(-1,0),Point(0,1),Point(0,-1)};
     // find the previous point 
     Point point = p - dir[mem_dir[ToIndex(p)]];
 
     // add current fragment
     switch ( mem_dir[ToIndex(p)] )
     {
-    case 0:
+    case RIGHT:
         mem_map_x[ToIndex(point)] = true;
         break;
-    case 1:
+    case LEFT:
         mem_map_x[ToIndex(p)] = true;
         break;
-    case 2:
+    case DOWN:
         mem_map_y[ToIndex(point)] = true;
         break;
-    case 3:
+    case UP:
         mem_map_y[ToIndex(p)] = true;
         break;
     default:
@@ -125,23 +158,11 @@ void Astar_Man :: retrace( Point p ) {
  * 
  * Update the given segment with A star Manager
  * 
+ * @segment: the segment to store the fragments
  */
 void Astar_Man :: Update( Segment * segment ) {
-//=========================Update Util==============================    
-    for(int y=y_lower;y<y_upper;y++) 
-        for(int x=x_lower;x<x_upper;x++)
-        {
-            Point start(x,y);
-            Point x_end = start + Point(1,0);
-            Point y_end = start + Point(0,1);
-            if (mem_map_x[ToIndex(Point(x,y))]) {
-                ++rst->edgeUtils[rst->toIndex(start, x_end)];
-            }
-            if (mem_map_y[ToIndex(Point(x,y))]) {
-                ++rst->edgeUtils[rst->toIndex(start, y_end)];
-            }
-        }
-        
+    
+    overflow = wirelength = 0;
 //=========================Update Fragment==========================    
     // for each mem_x
     for(int y=y_lower;y<y_upper;y++)
@@ -192,4 +213,96 @@ void Astar_Man :: Update( Segment * segment ) {
             }
         }
     }
+}
+
+void Astar_Man :: AddFragment( Point start, Point end ) {
+    Point step = UnitDirect( start, end );
+    DIRECT direct = toDirect(step);
+#ifdef DEBUG
+    cout << "pMan: +" << start.toString() << "-" << end.toString() << " : " << step.toString() << "-" << direct  << endl;
+#endif
+    for(Point p=start;p!=end;p=p+step) {
+        switch (direct)
+        {
+        case RIGHT:
+            mem_map_x[ToIndex(p)] = true;
+            break;
+        case LEFT:
+            mem_map_x[ToIndex(p+step)] = true;
+            break;
+        case DOWN:
+            mem_map_y[ToIndex(p)] = true;
+            break;
+        case UP:
+            mem_map_y[ToIndex(p+step)] = true;
+            break;
+        
+        default:
+            break;
+        }
+    }
+}
+
+void Astar_Man :: AddSegment( Segment * segment ) {
+    assert( segment ); 
+    for( auto& frag : segment->fragments ) {
+        AddFragment(frag.first, frag.second);
+    }
+}
+
+void Astar_Man :: RemoveUtil() {
+    assert( rst ); 
+
+    overflow = wirelength = 0;
+
+    for(int y=y_lower;y<y_upper;y++) 
+        for(int x=x_lower;x<x_upper;x++)
+        {
+            Point start(x,y);
+            Point x_end = start + Point(1,0);
+            Point y_end = start + Point(0,1);
+            if (mem_map_x[ToIndex(start)]) {
+#ifdef DEBUG
+                cout << "pMan: " << start.toString() << ">" << x_end.toString() << endl;
+#endif
+                --rst->edgeUtils[rst->toIndex(start, x_end)];
+            }
+            if (mem_map_y[ToIndex(start)]) {
+#ifdef DEBUG
+                cout << "pMan: " << start.toString() << "^" << y_end.toString() << endl;
+#endif
+                --rst->edgeUtils[rst->toIndex(start, y_end)];
+            }
+        }
+}
+
+
+void Astar_Man :: SaveUtil() {
+    assert( rst ); 
+
+    overflow = wirelength = 0;
+
+    for(int y=y_lower;y<y_upper;y++) 
+        for(int x=x_lower;x<x_upper;x++)
+        {
+            Point start(x,y);
+            Point x_end = start + Point(1,0);
+            Point y_end = start + Point(0,1);
+            if (mem_map_x[ToIndex(start)]) {
+                wirelength++;
+                overflow += rst->IsOverflow(start, x_end);
+#ifdef DEBUG
+                cout << "pMan: " << start.toString() << ">" << x_end.toString() << endl;
+#endif
+                ++rst->edgeUtils[rst->toIndex(start, x_end)];
+            }
+            if (mem_map_y[ToIndex(start)]) {
+                wirelength++;
+                overflow += rst->IsOverflow(start, y_end);
+#ifdef DEBUG
+                cout << "pMan: " << start.toString() << "^" << y_end.toString() << endl;
+#endif
+                ++rst->edgeUtils[rst->toIndex(start, y_end)];
+            }
+        }
 }

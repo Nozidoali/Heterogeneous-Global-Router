@@ -1,54 +1,52 @@
 #ifndef LOGIC_ASTAR_H
 #define LOGIC_ASTAR_H
 
-#include "Logic_RoutingInst.h"
+#include "Basic_RoutingInst.h"
 
-// the local area to search
-struct Astar_Man {
+/**
+ * Astar_Man:
+ * 
+ * The manager of local shortest path problem
+ * 1. Store the scope of local problem.
+ * 2. Store the edge information
+ */
+class Astar_Man {
+
+public:
     RoutingInst * rst;
     Point start, end;
     int x_lower, x_upper, y_lower, y_upper, area;
     int overflow, wirelength;
-    bool * mem_visited;
-    int * mem_distance, * mem_dir;
-    bool * mem_map_x, * mem_map_y;
+    bool * mem_visited, * mem_map_x, * mem_map_y;
+    int * mem_distance;
+    DIRECT * mem_dir;
+
     Astar_Man (){}
     Astar_Man ( RoutingInst * _rst);
-    Astar_Man ( RoutingInst * _rst, Point start, Point end , double Flex = 1 );
-    ~Astar_Man() {
-        delete [] mem_dir;      mem_dir = NULL;
-        delete [] mem_visited;  mem_visited = NULL;
-        delete [] mem_distance; mem_distance = NULL;
-        delete [] mem_map_x;    mem_map_x = NULL;
-        delete [] mem_map_y;    mem_map_y = NULL;
-    }
-    bool IsValid( Point a ) {
-        return a.x>=x_lower && a.x<x_upper && a.y>=y_lower && a.y<y_upper;
-    }
-    // Find the index coordinated with respect to the region
-    int ToIndex( Point a ) {
-        return (a.x-x_lower) + (a.y-y_lower)*(x_upper-x_lower);
-    }
-    void visit( Point a ) {
-        mem_visited[ToIndex(a)] = true;
-    }
-    bool isVisited( Point a ) {
-        return mem_visited[ToIndex(a)];
-    }
-    bool go( Point a, int dir, int cost ) {
-        bool ret = cost < mem_dir[ToIndex(a)] || mem_dir[ToIndex(a)] == -1;
-        if (ret) {
-            mem_dir[ToIndex(a)] = dir;
-            mem_distance[ToIndex(a)] = cost;
-        }
-        return ret;
-    }
-
-    // Retrace
-    void retrace( Point p );
-    void Update( Segment * segment );
-    bool IsUsed( Point a, Point b );
+    Astar_Man ( RoutingInst * _rst, Point start, Point end , double Flex = 0 );
+    ~Astar_Man();
+// =============================Properties================================== //
+    bool IsValid    ( Point a );
+    bool isVisited  ( Point a );
+    bool IsUsed     ( Point a, Point b );
     bool IsFull();
+
+// =============================Search Related============================== //
+    int  ToIndex    ( Point a );
+    void visit      ( Point a );
+    bool go         ( Point a, DIRECT dir, int cost );
+    void retrace    ( Point p );
+    void Update     ( Segment * segment );
+
+// =============================Grid Releted================================ //
+    void AddSegment ( Segment * Segment );
+    void AddEdge    ( Point p, DIRECT dir );
+    void AddFragment( Point start, Point end );
+    int  getOverflow ();
+    int  getWireLength ();
+    void SaveUtil   ();
+    void RemoveUtil   ();
+    
 };
 
 #endif

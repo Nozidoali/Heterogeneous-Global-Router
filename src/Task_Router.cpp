@@ -3,10 +3,11 @@
 
 RouterTask :: RouterTask( RoutingInst * _rst ) {
     rst = _rst;
-    sort(rst->nets, rst->nets + rst->numNets);
     for(int i=0;i<rst->numNets;i++) {
         tasks.push_back( NetTask( rst, rst->nets+i ) );
+        cout << i+1 << " / " << rst->numNets << "\r"; fflush(stdout);
     }
+    cout << endl;
 }
 
 RouterTask :: ~RouterTask() {
@@ -14,33 +15,58 @@ RouterTask :: ~RouterTask() {
 }
 
 void RouterTask :: Solve() {
-    for(auto& task : tasks) {
-        task.Solve( 1 );
+
+    sort( tasks.begin(), tasks.end() );
+    int process = 0;
+    for ( auto& task : tasks ) {
+        
+        // solve the whole network
+        task.Solve();
+
+        // save the utility in rst
+        task.SaveUtil();
+
+#ifdef DEBUG
+        cout.width(10);
+        cout << "-- net " << task.getNet()->id;
+        cout.width(10);
+        cout << "OF: " << task.getOverflow();
+        cout.width(10);
+        cout << "WL: " << task.getWireLength() << endl;
+#endif
+        // report process
+        cout << ++process << " / " << rst->numNets << "\r"; fflush(stdout);
+        
     }
-    for(auto& task : tasks) {
-        if ( task.isOverflow() ) {
-            task.Remove();
-            task.Solve( 2 );
-        }
-        if ( task.isOverflow() ) {
-            task.Remove();
-            task.Solve( 4 );
-        }
+
+    for ( auto& task : tasks ) {
+        
+        // remove the original result
+        task.Remove();
+
+        // solve the whole network
+        task.Solve();
+
+        // save the utility in rst
+        task.SaveUtil();
+
+#ifdef DEBUG
+        cout.width(10);
+        cout << "-- net " << task.getNet()->id;
+        cout.width(10);
+        cout << "OF: " << task.getOverflow();
+        cout.width(10);
+        cout << "WL: " << task.getWireLength() << endl;
+#endif
+        // report process
+        cout << ++process << " / " << rst->numNets << "\r"; fflush(stdout);
+        
     }
-    for(auto& task : tasks) {
-        if ( !task.isOverflow() ) {
-            task.Remove();
-            task.Solve( 1 );
-        }
-        if ( !task.isOverflow() ) {
-            task.Remove();
-            task.Solve( 2 );
-        }
-    }
+
 }
 
 void RouterTask :: Save() {
-    for(auto& task : tasks) {
+    for ( auto& task : tasks ) {
         task.Save();
     }
 }

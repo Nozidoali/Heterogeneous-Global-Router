@@ -32,14 +32,6 @@ public:
 };
 
 /**
- * Direction of the edge
- */
-enum DIRECT {
-    VERTICAL,
-    HORIZONTAL
-};
-
-/**
  * int toEdge(int x1, int y1, int x2, int y2, int gx, int gy)
  * From Point ( x1, y1 ) to Point ( x2, y2 )
  * Return the index of edge between two given point.

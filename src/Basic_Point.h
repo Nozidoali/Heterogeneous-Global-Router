@@ -18,6 +18,7 @@ public:
     Point(int _x, int _y);
     const string toString();
     bool operator == (const Point & p) const;
+    bool operator != (const Point & p) const;
     bool operator < (const Point & p) const;
     int operator ^ (const Point &p) const;
     Point operator + (const Point & p);
@@ -26,5 +27,15 @@ public:
 
 Point UnitDirect( Point a, Point b );
 
+static Point dir[4] = { Point(1,0),Point(-1,0),Point(0,1),Point(0,-1) };
+enum DIRECT {
+    RIGHT,
+    LEFT,
+    DOWN,
+    UP,
+    NONE
+};
+
+DIRECT toDirect( Point p );
 
 #endif

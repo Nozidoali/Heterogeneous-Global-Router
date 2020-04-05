@@ -1,4 +1,4 @@
-#include "Logic_RoutingInst.h"
+#include "Basic_RoutingInst.h"
 
 int RoutingInst :: toIndex( Point a, Point b ) {
     // assert( a.x >= 0 && a.y>=0 && b.x >= 0 && b.y >= 0 );
@@ -27,11 +27,16 @@ int toEdge(Point a, Point b, int gx, int gy) {
     return(toEdge(a.x, a.y, b.x, b.y, gx, gy));
 }
 
+enum DIRECT2 {
+    VERTICAL,
+    HORIZONTAL
+};
+
 pair<Point, Point> toPoint(int edgeNum, int gx, int gy) {
     // Makesure edgeNum is a valid number
     assert(edgeNum != -1);
     // Judge if the edge is vertical or horizontal
-    DIRECT direction = edgeNum % 2 == 0? VERTICAL: HORIZONTAL;
+    DIRECT2 direction = edgeNum % 2 == 0? VERTICAL: HORIZONTAL;
     int value = edgeNum >> 1;
     if (direction == VERTICAL) {
         int x = value % gx;
@@ -130,5 +135,5 @@ void RoutingInst :: Merge( RoutingInst * rstBackup ) {
 }
 
 bool RoutingInst :: IsOverflow( Point a, Point b) {
-    return edgeCaps[toIndex(a,b)] < edgeUtils[toIndex(a,b)];
+    return edgeCaps[toIndex(a,b)] <= edgeUtils[toIndex(a,b)];
 }
