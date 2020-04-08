@@ -8,13 +8,12 @@
 ## Platform
 Please build this program on a 64-bit UNIX like system with library `pthread`. Dependency:
 ```bash
-    sudo apt-get install make cmake gcc g++
+    sudo apt-get install make gcc g++
 ```
 
 ## Compile
 After updating the source file, you need to update Makefile by cmakelist first.
 ```
-    cmake .
     make
 ```
 
@@ -33,3 +32,15 @@ Please note that you need `CMake version 2.7` and `C++14 feature`.
 | 4 Mar |   1.0   | 5461421 | 1657741 | 5169015 | 466521 | 14946703 | 3143019 |
 | 23Mar |   2.0   | 3545650 | 360411  | 3274452 | 56184  | 9638287  | 475280  |
 ```
+
+## Description
+
+### Part.1 -- Structure
+
+```
+|--Point
+|--Pin
+|--Net
+|--Route
+```
+
