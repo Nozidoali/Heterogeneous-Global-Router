@@ -13,7 +13,7 @@ struct Route
     int cap ;
 
     int numNets ;	/* number of nets */
-    Net * nets ;		/* array of nets */
+    Net * nets ;	/* array of nets */
 
     int numEdges ; 	/* number of edges of the grid */
     int *edgeCaps; 	/* array of the actual edge capacities after considering for blockages */
@@ -42,6 +42,8 @@ void                Rst_SolveNet        ( Route * route, Net * net );
 void                Rst_SolveNetInitial ( Route * route, Net * net );
 void                Rst_SolveTaskInitial( Route * route, Task & task );
 bool                Rst_SolveTaskSearch ( Route * route, Task & task, bool isOpt );
+int                 Rst_RerouteNet      ( Route * route, Net * net );
+int                 Rst_RerouteTask     ( Route * route, Task & net );
 
 //==================================Features=================================//
 int                 Rst_EdgeOverflow    ( Route * route, EDGE edge );

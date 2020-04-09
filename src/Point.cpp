@@ -44,6 +44,11 @@ Point Point :: operator * (const Point & p) const {
     return Point( x, p.y );
 }
 
+int Point :: operator / (const Point & p) const {
+    return abs( x-p.x ) * abs( y-p.y );
+}
+
+
 Point Point :: operator -= (const Point & p) const {
     return Point( min( x, p.x ), min( y, p.y ) );
 }

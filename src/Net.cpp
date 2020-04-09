@@ -53,17 +53,7 @@ Tasks * Net_CreateTask( Net * net ) {
 void Net_CollectResult( Net * net, Tasks * tasks ) {
 
     assert( !Net_HasResult( net ) );
-    net->edges = new EDGES;
-
-    for ( auto & task : *tasks ) {
-        assert( Tsk_HasResult( task ) );
-        for ( auto & edge : Tsk_GetResult( task ) ) {
-            net->edges->push_back( edge );
-        }
-    }
-
-    sort( net->edges->begin(), net->edges->end() );
-    net->edges->erase(unique(net->edges->begin(), net->edges->end()), net->edges->end());
+    net->edges = Tsk_CollectResult( tasks );
 
 }
 
@@ -89,4 +79,8 @@ void Net_Free( Net * net ) {
         Net_CleanResult( net );
     }
     delete [] net->pins; net->pins = NULL;
+}
+
+int Net_GetOverflow( Net * net ) {
+    return net->overflow;
 }

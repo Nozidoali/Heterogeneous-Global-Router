@@ -33,6 +33,7 @@ struct Point
     bool    operator <  (const Point & p) const;
     int     operator ^  (const Point & p) const;
     Point   operator *  (const Point & p) const;
+    int     operator /  (const Point & p) const;
     Point   operator +  (const Point & p) const;
     Point   operator += (const Point & p) const;
     Point   operator -= (const Point & p) const;

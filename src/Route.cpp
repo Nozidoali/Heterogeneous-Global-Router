@@ -90,9 +90,13 @@ void Rst_ReadFile( Route * route, const char * inputFilename ) {
                     // read the number of pins in the net
                     finput >> route->nets[i].numPins;
                     route->nets[i].pins = new Point[route->nets[i].numPins];
+                    route->nets[i].upper = Point( 0, 0 );
+                    route->nets[i].lower = Point( route->gx, route->gy );
                     for (int j=0; j<route->nets[i].numPins; j++) {
                         // read the x,y coordinates of the pin
                         finput >> route->nets[i].pins[j].x >> route->nets[i].pins[j].y;
+                        route->nets[i].lower = (route->nets[i].lower -=  route->nets[i].pins[j]); 
+                        route->nets[i].upper = (route->nets[i].upper +=  route->nets[i].pins[j]); 
                     }
                 }
                 // read the blockages
@@ -147,21 +151,35 @@ void Rst_WriteFile ( Route * route, const char * outputFileName ) {
     return;
 }
 
-bool CMP_Net ( const Net & a, const Net & b ) { return a.overflow > b.overflow; }
+bool CMP_NetOverFlow ( const Net & a, const Net & b ) { return a.overflow > b.overflow; }
+bool CMP_NetArea ( const Net & a, const Net & b ) { return (a.upper/a.lower) < (b.upper/b.lower); }
 void Rst_Solve( Route * route ) {
+
+    ofstream fout( "static.csv" );
+    fout << "net ID,Area,overflow,wirelength" << endl;
+
+    sort( route->nets ,route->nets + route->numNets, CMP_NetArea );
     for (int i=0;i<route->numNets;i++) {
-        cout << i+1 << " / " << route->numNets << "\r"; fflush( stdout );
         Rst_SolveNetInitial( route, route->nets+i );
+        if ( Net_GetOverflow( route->nets+i ) > Net_GetWirelength( route->nets+i )/10 ) {
+            Net_CleanResult( route->nets+i );
+            Rst_SolveNet( route, route->nets+i );
+        }
+        Rst_UpdateUtil( route, (route->nets+i)->edges );
     }
-    sort( route->nets ,route->nets + route->numNets, CMP_Net );
-    Rst_CleanUtil( route );
     for (int i=0;i<route->numNets;i++) {
-        Net_CleanResult( route->nets+i );
-        cout << i+1 << " / " << route->numNets << "\r"; fflush( stdout );
-        Rst_SolveNet( route, route->nets+i );
-    }   
+        cout << i+1 << " / " << route->numNets << "\r"; fflush(stdout); 
+        Rst_RerouteNet( route, route->nets+i );
+    }
+
+    for (int i=0;i<route->numNets;i++)
+        fout << i+1 << " , " << (route->nets+i)->upper/(route->nets+i)->lower <<  " , " << (route->nets+i)->overflow << " , " << (route->nets+i)->edges->size() << endl;
+
+    fout.close();
 }
 void Rst_SolveNetInitial( Route * route, Net * net ) {
+
+    assert( !Net_HasResult( net ) );
     Tasks * pTasks = Net_CreateTask( net );
     for( auto & task : *pTasks ) {
         Rst_SolveTaskInitial( route, task );
@@ -169,29 +187,25 @@ void Rst_SolveNetInitial( Route * route, Net * net ) {
     }
     Net_CollectResult( net, pTasks );
     net->overflow = Rst_EdgesOverflow( route, net->edges );
-    Rst_UpdateUtil( route, net->edges );
     Tsk_Free( pTasks );
+
 }
 
 void Rst_SolveNet( Route * route, Net * net ) {
 
+    assert( !Net_HasResult( net ) );
     Tasks * pTasks = Net_CreateTask( net );
     for( auto & task : *pTasks ) {
-        Rst_SolveTaskInitial( route, task );
-        if ( Rst_EdgesOverflow( route, task.edges ) > 0 ) {
-            Tsk_CleanResult( task );
-            Tsk_SetDifficulty( task, 1 );
-            if ( !Rst_SolveTaskSearch( route, task, true ) ) {
-                Tsk_SetDifficulty( task, 0 );
-                Rst_SolveTaskSearch( route, task, false );
-            }
+        Tsk_SetDifficulty( task, 3 );
+        if ( !Rst_SolveTaskSearch( route, task, true ) ) {
+            Tsk_SetDifficulty( task, 0 );
+            Rst_SolveTaskSearch( route, task, false );
         }
         Rst_UpdateSegment( route, net, task.edges );
         assert( Tsk_HasResult( task ) );
     }
     Net_CollectResult( net, pTasks );
     net->overflow = Rst_EdgesOverflow( route, net->edges );
-    Rst_UpdateUtil( route, net->edges );
     Tsk_Free( pTasks );
 
 }
@@ -294,7 +308,7 @@ void Rst_SolveTaskInitial ( Route * route, Task & task ) {
 }
 
 int Rst_EdgeOverflow ( Route * route, EDGE edge ) {
-    return route->edgeUtils[edge] + 1 - route->edgeCaps[edge];
+    return max( 0, route->edgeUtils[edge] + 1 - route->edgeCaps[edge] );
 }
 
 bool Rst_PointIsValid( Route * route, Point point ) {
@@ -313,9 +327,11 @@ void Rst_UpdateUtil ( Route * route, EDGES * edges ) {
 }
 
 void Rst_CleanUtil ( Route * route ) {
+
     for ( int i=0;i<2*route->gx*route->gy;i++) {
         route->edgeUtils[ i ] = 0;
     }
+    
 }
 
 void Rst_UpdateSegment ( Route * route, Net * net, EDGES * edges ) {
@@ -327,13 +343,14 @@ void Rst_UpdateSegment ( Route * route, Net * net, EDGES * edges ) {
         // print the edge in the correct format
         net->segments.push_back( Rst_EdgestoPin( route, start, end ) );
     }
+
 }
 
 int Rst_EdgesOverflow ( Route * route, EDGES * edges ) {
     
     int overflow = 0;
     for ( auto & edge : *edges )
-        overflow += Rst_EdgeOverflow( route, edge );
+        overflow += ( Rst_EdgeOverflow( route, edge ) > 0 );
     return overflow;
 
 }
@@ -341,4 +358,49 @@ int Rst_EdgesOverflow ( Route * route, EDGES * edges ) {
 void Rst_ReleaseUtil ( Route * route, EDGES * edges ) {
     for ( auto & edge : *edges )
         route->edgeUtils[ edge ] --; 
+}
+
+int Rst_RerouteNet ( Route * route, Net * net ) {
+    
+    assert( Net_HasResult(net) );
+    int oldOverflow = net->overflow;
+
+    // clean the utility
+    Rst_ReleaseUtil( route, net->edges );
+
+    Tasks * pTasks = Net_CreateTask( net );
+    for( auto & task : *pTasks ) {
+        Tsk_SetDifficulty( task, 3 );
+        if ( !Rst_SolveTaskSearch( route, task, true ) ) {
+            Tsk_SetDifficulty( task, 0 );
+            Rst_SolveTaskSearch( route, task, false );
+        }
+        Rst_UpdateSegment( route, net, task.edges );
+        assert( Tsk_HasResult( task ) );
+    }
+    EDGES * edges = Tsk_CollectResult( pTasks );
+    int newOverflow = Rst_EdgesOverflow( route, edges );
+
+    // skip update if new result is worse
+    if ( oldOverflow < newOverflow ) {
+        Rst_UpdateUtil( route, net->edges );
+        Edg_Free( edges ); 
+        Tsk_Free( pTasks );
+        return -1;
+    }
+    // update segments, edges and overflow
+    Net_CleanResult( net );
+    for( auto & task : *pTasks ) { Rst_UpdateSegment( route, net, task.edges ); }
+    net->edges = edges;
+    net->overflow = newOverflow;
+
+    // update utility
+    Rst_UpdateUtil( route, net->edges );
+
+    Tsk_Free( pTasks );
+    return oldOverflow - newOverflow;
+}
+
+int Rst_RerouteTask ( Route * route, Task & task ) {
+
 }

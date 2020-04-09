@@ -51,3 +51,25 @@ bool Tsk_PointIsValid( const Task & task, Point point ) {
 void Tsk_SetDifficulty ( Task & task, int difficulty ) {
     task.difficulty = difficulty;
 }
+
+EDGES * Tsk_CollectResult ( Tasks * pTasks ) {
+
+    EDGES * edges = new EDGES;
+    for ( auto & task : *pTasks ) {
+        assert( Tsk_HasResult( task ) );
+        for ( auto & edge : Tsk_GetResult( task ) ) {
+            edges->push_back( edge );
+        }
+    }
+    sort( edges->begin(), edges->end() );
+    edges->erase(unique(edges->begin(), edges->end()), edges->end());
+    return edges;
+
+}
+
+void Edg_Free ( EDGES * edges ) {
+    if ( edges == NULL )
+        return;
+    edges->clear();
+    delete edges; edges = NULL;
+}

@@ -6,6 +6,8 @@
 typedef int EDGE;
 typedef vector<EDGE> EDGES;
 
+void            Edg_Free            ( EDGES * edges );
+
 struct Task 
 {
 
@@ -26,4 +28,5 @@ void            Tsk_CleanResult     ( Task & task );
 void            Tsk_Free            ( Tasks * pTasks );
 bool            Tsk_PointIsValid    ( const Task & task, Point point );
 void            Tsk_SetDifficulty   ( Task & task, int difficulty );
+EDGES *         Tsk_CollectResult   ( Tasks * pTasks );
 #endif

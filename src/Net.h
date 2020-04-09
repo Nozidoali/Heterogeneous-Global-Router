@@ -17,6 +17,7 @@ struct Net
     Point * pins; 		        /* array of pins (or terminals) of the net. */
     EDGES * edges;              /* solution of the net */
     SEGMENTS segments;
+    Point upper, lower;
     
 };
 
@@ -26,5 +27,6 @@ int             Net_GetWirelength   ( Net * net );
 bool            Net_HasResult       ( Net * net );
 void            Net_CleanResult     ( Net * net );
 void            Net_Free            ( Net * net );
+int             Net_GetOverflow     ( Net * net );
 
 #endif

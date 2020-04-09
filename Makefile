@@ -39,11 +39,21 @@ project : clean init $(TARGET)
 leak:  clean init $(TARGET)
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./ROUTER.exe benchmarks/test.gr benchmarks/test.out
 
+test1: clean init $(TARGET)
+	./ROUTER.exe benchmarks/adaptec1.gr benchmarks/adaptec1.out
+	python project.py
+
+test2: clean init $(TARGET)
+	time ./ROUTER.exe benchmarks/adaptec2.gr benchmarks/adaptec2.out
+	./556_eval.exe benchmarks/adaptec2.gr benchmarks/adaptec2.out 0
+	./556_eval.exe benchmarks/adaptec2.gr benchmarks/adaptec2.out 1
+	python project.py
 
 test: clean init $(TARGET)
 	./ROUTER.exe benchmarks/test.gr benchmarks/test.out
 	./556_eval.exe benchmarks/test.gr benchmarks/test.out 0
 	./556_eval.exe benchmarks/test.gr benchmarks/test.out 1
+	python project.py
 
 evaluate : clean init $(TARGET)
 	sh ./testing/evaluate.sh
