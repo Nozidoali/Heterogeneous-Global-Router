@@ -161,7 +161,7 @@ void Rst_Solve( Route * route ) {
     sort( route->nets ,route->nets + route->numNets, CMP_NetArea );
     for (int i=0;i<route->numNets;i++) {
         Rst_SolveNetInitial( route, route->nets+i );
-        if ( Net_GetOverflow( route->nets+i ) > Net_GetWirelength( route->nets+i )/10 ) {
+        if ( Net_GetOverflow( route->nets+i ) > Net_GetWirelength( route->nets+i )/3 ) {
             Net_CleanResult( route->nets+i );
             Rst_SolveNet( route, route->nets+i );
         }
@@ -355,18 +355,23 @@ int Rst_EdgesOverflow ( Route * route, EDGES * edges ) {
 
 }
 
-void Rst_ReleaseUtil ( Route * route, EDGES * edges ) {
-    for ( auto & edge : *edges )
-        route->edgeUtils[ edge ] --; 
+int Rst_ReleaseUtil ( Route * route, EDGES * edges ) {
+    int releaseOverflow = 0;
+    for ( auto & edge : *edges ) {
+        if ( route->edgeUtils[ edge ] >= route->edgeCaps[ edge ] )
+            releaseOverflow ++;
+        route->edgeUtils[ edge ] --;
+    }
+    return releaseOverflow;
 }
 
 int Rst_RerouteNet ( Route * route, Net * net ) {
     
     assert( Net_HasResult(net) );
-    int oldOverflow = net->overflow;
+    int oldOverflow = Rst_EdgesOverflow( route, net->edges );
 
-    // clean the utility
-    Rst_ReleaseUtil( route, net->edges );
+    // clean the utility, store the overflow released
+    oldOverflow += Rst_ReleaseUtil( route, net->edges );
 
     Tasks * pTasks = Net_CreateTask( net );
     for( auto & task : *pTasks ) {

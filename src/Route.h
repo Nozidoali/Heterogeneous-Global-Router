@@ -51,7 +51,7 @@ int                 Rst_EdgesOverflow   ( Route * route, EDGES * edge );
 bool                Rst_PointIsValid    ( Route * route, Point point );
 void                Rst_UpdateUtil      ( Route * route, EDGES * edges );
 void                Rst_CleanUtil       ( Route * route );
-void                Rst_ReleaseUtil     ( Route * route, EDGES * edges );
+int                 Rst_ReleaseUtil     ( Route * route, EDGES * edges );
 void                Rst_UpdateSegment   ( Route * route, Net * net, EDGES * edges );
 
 #endif
