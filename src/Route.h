@@ -22,7 +22,7 @@ struct Route
 
     bool isDecomposition;
     bool isOrdered;
-    
+
 };
 
 //==================================Memory Control===========================//
@@ -48,11 +48,15 @@ bool                Rst_SolveTaskSearch ( Route * route, Task & task, bool isOpt
 int                 Rst_RerouteNet      ( Route * route, Net * net );
 int                 Rst_RerouteTask     ( Route * route, Task & net );
 
-//==================================Features=================================//
+//==================================Edge Features============================//
 int                 Rst_EdgeOverflow    ( Route * route, EDGE edge );
 int                 Rst_EdgesOverflow   ( Route * route, EDGES * edge );
+int                 Rst_EdgeWeight      ( Route * route, EDGE edge );
+int                 Rst_EdgesWeight     ( Route * route, EDGES * edge );
+
 bool                Rst_PointIsValid    ( Route * route, Point point );
 void                Rst_UpdateUtil      ( Route * route, EDGES * edges );
+void                Rst_InitWeight      ( Route * route );
 void                Rst_CleanUtil       ( Route * route );
 int                 Rst_ReleaseUtil     ( Route * route, EDGES * edges );
 void                Rst_UpdateSegment   ( Route * route, Net * net, EDGES * edges );

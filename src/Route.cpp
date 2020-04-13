@@ -156,16 +156,26 @@ void Rst_WriteFile ( Route * route, const char * outputFileName ) {
 
 bool CMP_NetOverFlow ( const Net & a, const Net & b ) { return a.overflow > b.overflow; }
 bool CMP_NetArea ( const Net & a, const Net & b ) { return (a.upper/a.lower) < (b.upper/b.lower); }
+bool CMP_NetCost ( const Net & a, const Net & b ) { return a.cost > b.cost; }
 void Rst_Solve( Route * route ) {
 
+    // Initial Solution
     for (int i=0;i<route->numNets;i++) {
         cout << "Route : " << i+1 << " / " << route->numNets << "\r"; fflush(stdout);
         Rst_SolveNetInitial( route, route->nets+i );
     }
 
-    if ( route->isOrdered ) 
-        sort( route->nets, route->nets+route->numNets, CMP_NetOverFlow );
+    // Calculate Net Costs
+    Rst_InitWeight( route );
+    for (int i=0;i<route->numNets;i++) {
+        route->nets[i].cost = Rst_EdgesWeight( route, route->nets[i].edges );
+    }
 
+    // Net Ordering
+    if ( route->isOrdered ) 
+        sort( route->nets, route->nets+route->numNets, CMP_NetCost );
+
+    // Rip-up and Reroute
     if ( route->isOrdered || route->isDecomposition ) {
         cout << endl;
         for (int i=0;i<route->numNets;i++) {
@@ -311,6 +321,19 @@ int Rst_EdgeOverflow ( Route * route, EDGE edge ) {
     return max( 0, route->edgeUtils[edge] + 1 - route->edgeCaps[edge] );
 }
 
+int Rst_EdgeWeight ( Route * route, EDGE edge ) {
+    return route->edgeWeights[edge];
+}
+
+int Rst_EdgesWeight ( Route * route, EDGES * edges ) {
+    int weight = 0;
+    for ( auto & edge : *edges ) {
+        weight += Rst_EdgeWeight( route, edge );
+    }
+    return weight;
+}
+
+
 bool Rst_PointIsValid( Route * route, Point point ) {
     return ( point >= Point(0,0) ) && ( point <= Point( route->gx-1,route->gy-1 ) ); 
 }
@@ -411,4 +434,10 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
 
 int Rst_RerouteTask ( Route * route, Task & task ) {
 
+}
+
+void Rst_InitWeight ( Route * route ) {
+    for (int i=0;i<2*route->gx*route->gy;i++) {
+        route->edgeWeights[i] = 1 + route->edgeUtils[i];
+    }
 }

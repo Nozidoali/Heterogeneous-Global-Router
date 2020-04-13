@@ -11,6 +11,7 @@ typedef vector<SEGMENT> SEGMENTS;
 struct Net
 {
 
+    int cost;
     int overflow;
     int id ; 		            /* ID of the net */
     int numPins;                /* number of pins */
