@@ -4,6 +4,17 @@
 Tasks * Net_CreateTask( Net * net ) {
 
     Tasks * ptasks = new Tasks;
+    
+    // without MST algorithm
+    for (int i=0;i<net->numPins-1;i++) {
+        Task task = Tsk_Init( net->pins[i], net->pins[i+1] );
+        ptasks->push_back( task );
+    }
+    return ptasks;
+}
+Tasks * Net_CreateTaskMST( Net * net ) {
+
+    Tasks * ptasks = new Tasks;
 
     struct Edge {
         Point a,b;
@@ -83,4 +94,8 @@ void Net_Free( Net * net ) {
 
 int Net_GetOverflow( Net * net ) {
     return net->overflow;
+}
+
+int Net_GetArea ( Net * net ) {
+    return net->lower / net->upper;
 }

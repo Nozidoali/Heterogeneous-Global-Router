@@ -11,13 +11,15 @@ Please build this program on a 64-bit UNIX like system with library `pthread`. D
     sudo apt-get install make gcc g++
 ```
 
-## Compile
+## Getting Started
 After updating the source file, you need to update Makefile by cmakelist first.
 ```
     make
 ```
 
-Please note that you need `CMake version 2.7` and `C++14 feature`.
+Please note that you need `C++14 feature`.
+
+## Part.1
 
 ## Run
 ```
@@ -33,14 +35,21 @@ Please note that you need `CMake version 2.7` and `C++14 feature`.
 | 23Mar |   2.0   | 3545650 | 360411  | 3274452 | 56184  | 9638287  | 475280  |
 ```
 
-## Description
+## Part.2
 
-### Part.1 -- Structure
-
+## Run
 ```
-|--Point
-|--Pin
-|--Net
-|--Route
+    Usage : ./ROUTE.exe -d=<Decomposition> -n=<Ordered> <input_benchmark_name> <output_file_name>
 ```
 
+## Performance
+
+***Adaptec1***:
+```
+| Parameter | Runtime |   TWL   |  TOF1  |
+| :-------: | :-----: | :-----: | :----: |
+| -d=1 -n=1 | 0:28.87 | 3471014 | 488451 |
+| -d=1 -n=0 | 0:28.07 | 3471093 | 488286 |
+| -d=0 -n=1 | 0:27.09 | 5410564 |1587515 |
+| -d=0 -n=0 | 0:07.02 | 5461421 |1657741 |
+```

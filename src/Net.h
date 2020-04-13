@@ -21,12 +21,19 @@ struct Net
     
 };
 
+//==================================Task Management==========================//
+Tasks *         Net_CreateTaskMST   ( Net * net );
 Tasks *         Net_CreateTask      ( Net * net );
 void            Net_CollectResult   ( Net * net, Tasks * tasks );
+
+//==================================Features=================================//
 int             Net_GetWirelength   ( Net * net );
+int             Net_GetOverflow     ( Net * net );
+int             Net_GetArea         ( Net * net );
 bool            Net_HasResult       ( Net * net );
+
+//==================================Memory Control===========================//
 void            Net_CleanResult     ( Net * net );
 void            Net_Free            ( Net * net );
-int             Net_GetOverflow     ( Net * net );
 
 #endif

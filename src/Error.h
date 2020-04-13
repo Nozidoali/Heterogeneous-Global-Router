@@ -1,7 +1,7 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-#include <cstdlib>
+#include "control.h"
 
 class Exception 
 {

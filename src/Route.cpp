@@ -1,7 +1,9 @@
 #include "Route.h"
 
-Route * Rst_Start() {
+Route * Rst_Start( bool isDecomposition, bool isOrdered ) {
     Route * route = new Route;
+    route->isDecomposition = isDecomposition;
+    route->isOrdered = isOrdered;
     return route;
 }
 
@@ -12,6 +14,7 @@ void Rst_Stop( Route * route ) {
     delete [] route->nets; route->nets = NULL;
     delete [] route->edgeCaps; route->edgeCaps = NULL;
     delete [] route->edgeUtils; route->edgeUtils = NULL;
+    delete [] route->edgeWeights; route->edgeWeights = NULL;
     delete route; route = NULL;
 }
 
@@ -155,38 +158,34 @@ bool CMP_NetOverFlow ( const Net & a, const Net & b ) { return a.overflow > b.ov
 bool CMP_NetArea ( const Net & a, const Net & b ) { return (a.upper/a.lower) < (b.upper/b.lower); }
 void Rst_Solve( Route * route ) {
 
-    ofstream fout( "static.csv" );
-    fout << "net ID,Area,overflow,wirelength" << endl;
-
-    sort( route->nets ,route->nets + route->numNets, CMP_NetArea );
     for (int i=0;i<route->numNets;i++) {
+        cout << "Route : " << i+1 << " / " << route->numNets << "\r"; fflush(stdout);
         Rst_SolveNetInitial( route, route->nets+i );
-        if ( Net_GetOverflow( route->nets+i ) > Net_GetWirelength( route->nets+i )/3 ) {
-            Net_CleanResult( route->nets+i );
-            Rst_SolveNet( route, route->nets+i );
+    }
+
+    if ( route->isOrdered ) 
+        sort( route->nets, route->nets+route->numNets, CMP_NetOverFlow );
+
+    if ( route->isOrdered || route->isDecomposition ) {
+        cout << endl;
+        for (int i=0;i<route->numNets;i++) {
+            cout << "RRR net: " << i+1 << " / " << route->numNets << "\r"; fflush(stdout); 
+            Rst_RerouteNet( route, route->nets+i );
         }
-        Rst_UpdateUtil( route, (route->nets+i)->edges );
-    }
-    for (int i=0;i<route->numNets;i++) {
-        cout << i+1 << " / " << route->numNets << "\r"; fflush(stdout); 
-        Rst_RerouteNet( route, route->nets+i );
     }
 
-    for (int i=0;i<route->numNets;i++)
-        fout << i+1 << " , " << (route->nets+i)->upper/(route->nets+i)->lower <<  " , " << (route->nets+i)->overflow << " , " << (route->nets+i)->edges->size() << endl;
-
-    fout.close();
 }
 void Rst_SolveNetInitial( Route * route, Net * net ) {
 
     assert( !Net_HasResult( net ) );
-    Tasks * pTasks = Net_CreateTask( net );
+    Tasks * pTasks = route->isDecomposition? Net_CreateTaskMST( net ) : Net_CreateTask( net );
     for( auto & task : *pTasks ) {
         Rst_SolveTaskInitial( route, task );
         Rst_UpdateSegment( route, net, task.edges );
     }
     Net_CollectResult( net, pTasks );
     net->overflow = Rst_EdgesOverflow( route, net->edges );
+    Rst_UpdateUtil( route, net->edges );
     Tsk_Free( pTasks );
 
 }
@@ -194,7 +193,7 @@ void Rst_SolveNetInitial( Route * route, Net * net ) {
 void Rst_SolveNet( Route * route, Net * net ) {
 
     assert( !Net_HasResult( net ) );
-    Tasks * pTasks = Net_CreateTask( net );
+    Tasks * pTasks = route->isDecomposition? Net_CreateTaskMST( net ) : Net_CreateTask( net );
     for( auto & task : *pTasks ) {
         Tsk_SetDifficulty( task, 3 );
         if ( !Rst_SolveTaskSearch( route, task, true ) ) {
@@ -206,6 +205,7 @@ void Rst_SolveNet( Route * route, Net * net ) {
     }
     Net_CollectResult( net, pTasks );
     net->overflow = Rst_EdgesOverflow( route, net->edges );
+    Rst_UpdateUtil( route, net->edges );
     Tsk_Free( pTasks );
 
 }
@@ -367,20 +367,22 @@ int Rst_ReleaseUtil ( Route * route, EDGES * edges ) {
 
 int Rst_RerouteNet ( Route * route, Net * net ) {
     
-    assert( Net_HasResult(net) );
+    assert( Net_HasResult( net ) );
+    
+    // skip large nets
+    if ( Net_GetArea( net ) >= 1000 )
+        return 0;
     int oldOverflow = Rst_EdgesOverflow( route, net->edges );
 
     // clean the utility, store the overflow released
     oldOverflow += Rst_ReleaseUtil( route, net->edges );
 
-    Tasks * pTasks = Net_CreateTask( net );
+    Tasks * pTasks = route->isDecomposition? Net_CreateTaskMST( net ) : Net_CreateTask( net );
     for( auto & task : *pTasks ) {
-        Tsk_SetDifficulty( task, 3 );
+        Tsk_SetDifficulty( task, 0 );
         if ( !Rst_SolveTaskSearch( route, task, true ) ) {
-            Tsk_SetDifficulty( task, 0 );
-            Rst_SolveTaskSearch( route, task, false );
+            Rst_SolveTaskInitial( route, task );
         }
-        Rst_UpdateSegment( route, net, task.edges );
         assert( Tsk_HasResult( task ) );
     }
     EDGES * edges = Tsk_CollectResult( pTasks );
@@ -393,6 +395,7 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
         Tsk_Free( pTasks );
         return -1;
     }
+
     // update segments, edges and overflow
     Net_CleanResult( net );
     for( auto & task : *pTasks ) { Rst_UpdateSegment( route, net, task.edges ); }

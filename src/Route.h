@@ -20,10 +20,13 @@ struct Route
     int *edgeUtils;	/* array of edge utilizations */  
     int *edgeWeights;
 
+    bool isDecomposition;
+    bool isOrdered;
+    
 };
 
 //==================================Memory Control===========================//
-Route *             Rst_Start       ();
+Route *             Rst_Start       ( bool isDecomposition, bool isOrdered );
 void                Rst_Stop        ( Route * route );
 
 //==================================Index Convertion=========================//

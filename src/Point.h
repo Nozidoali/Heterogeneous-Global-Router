@@ -2,20 +2,6 @@
 #define POINT_H
 
 #include "Error.h"
-#include <string>
-#include <sstream>
-#include <cassert>
-#include <vector>
-#include <iostream>
-#include <cstdlib>
-#include <exception>
-#include <fstream>
-#include <queue>
-#include <list>
-#include <algorithm>
-#include <map>
-
-using namespace std;
 
 /**
  * A structure to represent a 2D Point. 
