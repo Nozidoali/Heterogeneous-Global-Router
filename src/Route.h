@@ -44,6 +44,7 @@ void                Rst_Solve           ( Route * route );
 void                Rst_SolveNet        ( Route * route, Net * net );
 void                Rst_SolveNetInitial ( Route * route, Net * net );
 void                Rst_SolveTaskInitial( Route * route, Task & task );
+void                Rst_SolveTaskLSeg   ( Route * route, Task & task );
 bool                Rst_SolveTaskSearch ( Route * route, Task & task, bool isOpt );
 int                 Rst_RerouteNet      ( Route * route, Net * net );
 int                 Rst_RerouteTask     ( Route * route, Task & net );
@@ -55,10 +56,15 @@ int                 Rst_EdgeWeight      ( Route * route, EDGE edge );
 int                 Rst_EdgesWeight     ( Route * route, EDGES * edge );
 
 bool                Rst_PointIsValid    ( Route * route, Point point );
+void                Rst_UpdateSegment   ( Route * route, Net * net, EDGES * edges );
+
+//==================================Util Features============================//
 void                Rst_UpdateUtil      ( Route * route, EDGES * edges );
-void                Rst_InitWeight      ( Route * route );
 void                Rst_CleanUtil       ( Route * route );
 int                 Rst_ReleaseUtil     ( Route * route, EDGES * edges );
-void                Rst_UpdateSegment   ( Route * route, Net * net, EDGES * edges );
+
+//==================================Weight Features==========================//
+void                Rst_InitWeight      ( Route * route );
+void                Rst_UpdateWeight    ( Route * route, EDGES * edges );
 
 #endif

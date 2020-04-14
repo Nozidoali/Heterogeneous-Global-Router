@@ -13,13 +13,13 @@ bool Tsk_HasResult( const Task & task ) {
     return ( task.edges != NULL );
 }
 
-const EDGES & Tsk_GetResult( const Task & task ) {
-    return *(task.edges);
+EDGES * Tsk_GetResult( const Task & task ) {
+    return task.edges;
 }
 
 void Tsk_Append( Task & task, EDGE edge ) {
     assert( task.edges != NULL );
-    task.edges->push_back( edge );
+    task.edges->insert( edge );
 }
 
 int Tsk_GetWirelength( const Task & task ) {
@@ -57,12 +57,11 @@ EDGES * Tsk_CollectResult ( Tasks * pTasks ) {
     EDGES * edges = new EDGES;
     for ( auto & task : *pTasks ) {
         assert( Tsk_HasResult( task ) );
-        for ( auto & edge : Tsk_GetResult( task ) ) {
-            edges->push_back( edge );
+        EDGES edges_copy = *( Tsk_GetResult( task ) );
+        for ( auto & edge : *edges ) {
+            edges->insert( edge );
         }
     }
-    sort( edges->begin(), edges->end() );
-    edges->erase(unique(edges->begin(), edges->end()), edges->end());
     return edges;
 
 }

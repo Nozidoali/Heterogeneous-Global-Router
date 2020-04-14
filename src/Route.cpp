@@ -190,7 +190,7 @@ void Rst_SolveNetInitial( Route * route, Net * net ) {
     assert( !Net_HasResult( net ) );
     Tasks * pTasks = route->isDecomposition? Net_CreateTaskMST( net ) : Net_CreateTask( net );
     for( auto & task : *pTasks ) {
-        Rst_SolveTaskInitial( route, task );
+        Rst_SolveTaskLSeg( route, task );
         Rst_UpdateSegment( route, net, task.edges );
     }
     Net_CollectResult( net, pTasks );
@@ -255,8 +255,6 @@ bool Rst_SolveTaskSearch ( Route * route, Task & task, bool isOpt ) {
             for (Point p=task.end;p!=task.start;p=p-dir[mem_dir[Rst_UniquePoint( route, p )]]) {
                 Tsk_Append( task, Rst_PintoEdge( route, p, p-dir[mem_dir[Rst_UniquePoint( route, p )]] ) );
             }
-            sort(task.edges->begin(), task.edges->end());
-            task.edges->erase(unique(task.edges->begin(), task.edges->end()), task.edges->end());
             return true;
         }
         for(unsigned int i=0;i<4;i++) {
@@ -295,7 +293,45 @@ bool Rst_SolveTaskSearch ( Route * route, Task & task, bool isOpt ) {
     return false;
 }
 
+Point Rst_SolveTaskInitial_Helper ( Route * route, Task & task, Point start, Point end ) {
+
+    assert( task.edges != NULL );
+    if ( start == end ) {
+        return end;
+    }
+
+    Point p1 = end * start, p2 = start * end;
+    Point t1 = (start^p1) > (start^p2) ? p1 : p2;
+    Point t2 = (start^p1) > (start^p2) ? p1 : p2;
+
+    EDGE edge1 = Rst_PintoEdge( route, start, start>>t1 );
+    EDGE edge2 = Rst_PintoEdge( route, start, start>>t2 );
+
+    // the first choice are not going to cause overflow
+    if ( Rst_EdgeOverflow( route, edge1 ) == 0 ) {
+        Tsk_Append( task, edge1 );
+        return start>>t1;
+    }
+    else {
+        Tsk_Append( task, edge2 );
+        return start>>t2;
+    }
+    
+}
+
 void Rst_SolveTaskInitial ( Route * route, Task & task ) {
+
+    assert( task.edges == NULL );
+    task.edges = new EDGES;
+
+    Point start = task.start;
+    while ( start != task.end ) {
+        start = Rst_SolveTaskInitial_Helper( route, task, start, task.end );
+    }
+
+}
+
+void Rst_SolveTaskLSeg ( Route * route, Task & task ) {
 
     assert( task.edges == NULL );
     task.edges = new EDGES;
@@ -310,9 +346,6 @@ void Rst_SolveTaskInitial ( Route * route, Task & task ) {
     for (Point p = (start*end); p!=end; p=p>>end) {
         Tsk_Append( task, Rst_PintoEdge(route,p,p>>end) );
     }
-
-    sort(task.edges->begin(), task.edges->end());
-    task.edges->erase(unique(task.edges->begin(), task.edges->end()), task.edges->end());
 
     assert( Tsk_HasResult( task ) );
 }
@@ -343,6 +376,7 @@ UNIQUE_POINT Rst_UniquePoint ( Route * route, Point a ) {
 }
 
 void Rst_UpdateUtil ( Route * route, EDGES * edges ) {
+    EDGES edges_copy = *edges;
     for ( auto & edge : *edges ) {
         route->edgeUtils[ edge ] ++;
         route->edgeWeights[ edge ] ++;
@@ -359,10 +393,12 @@ void Rst_CleanUtil ( Route * route ) {
 
 void Rst_UpdateSegment ( Route * route, Net * net, EDGES * edges ) {
 
-    for (unsigned int i=0;i<edges->size();i++) {
-        EDGE start = (*edges)[i];
-        while ( i+1 < edges->size() && (*edges)[i]+1 == (*edges)[i+1] ) { i++; }
-        EDGE end = (*edges)[i];
+    EDGES edges_copy = *edges;
+    EDGES::iterator it;
+    for ( it = edges->begin(); it != edges->end() ; it++ ) {
+        EDGE start = *it;
+        while ( (++it) != edges->end() && *(--it)+1 == *(++it) ) {}
+        EDGE end = *(--it);
         // print the edge in the correct format
         net->segments.push_back( Rst_EdgestoPin( route, start, end ) );
     }
@@ -372,14 +408,17 @@ void Rst_UpdateSegment ( Route * route, Net * net, EDGES * edges ) {
 int Rst_EdgesOverflow ( Route * route, EDGES * edges ) {
     
     int overflow = 0;
-    for ( auto & edge : *edges )
+    EDGES edges_copy = *edges;
+    for ( auto & edge : *edges ) {
         overflow += ( Rst_EdgeOverflow( route, edge ) > 0 );
+    }
     return overflow;
 
 }
 
 int Rst_ReleaseUtil ( Route * route, EDGES * edges ) {
     int releaseOverflow = 0;
+    EDGES edges_copy = *edges;
     for ( auto & edge : *edges ) {
         if ( route->edgeUtils[ edge ] >= route->edgeCaps[ edge ] )
             releaseOverflow ++;
@@ -393,7 +432,7 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
     assert( Net_HasResult( net ) );
     
     // skip large nets
-    if ( Net_GetArea( net ) >= 1000 )
+    if ( Net_GetArea( net ) >= 10000 )
         return 0;
     int oldOverflow = Rst_EdgesOverflow( route, net->edges );
 
@@ -402,7 +441,7 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
 
     Tasks * pTasks = route->isDecomposition? Net_CreateTaskMST( net ) : Net_CreateTask( net );
     for( auto & task : *pTasks ) {
-        Tsk_SetDifficulty( task, 0 );
+        Tsk_SetDifficulty( task, 5 );
         if ( !Rst_SolveTaskSearch( route, task, true ) ) {
             Rst_SolveTaskInitial( route, task );
         }
@@ -412,12 +451,12 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
     int newOverflow = Rst_EdgesOverflow( route, edges );
 
     // skip update if new result is worse
-    if ( oldOverflow < newOverflow ) {
-        Rst_UpdateUtil( route, net->edges );
-        Edg_Free( edges ); 
-        Tsk_Free( pTasks );
-        return -1;
-    }
+    // if ( oldOverflow < newOverflow ) {
+    //     Rst_UpdateUtil( route, net->edges );
+    //     Edg_Free( edges ); 
+    //     Tsk_Free( pTasks );
+    //     return -1;
+    // }
 
     // update segments, edges and overflow
     Net_CleanResult( net );
@@ -425,8 +464,9 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
     net->edges = edges;
     net->overflow = newOverflow;
 
-    // update utility
+    // update utility and edge weights
     Rst_UpdateUtil( route, net->edges );
+    Rst_UpdateWeight( route, net->edges );
 
     Tsk_Free( pTasks );
     return oldOverflow - newOverflow;
@@ -440,4 +480,10 @@ void Rst_InitWeight ( Route * route ) {
     for (int i=0;i<2*route->gx*route->gy;i++) {
         route->edgeWeights[i] = 1 + route->edgeUtils[i];
     }
+}
+
+void Rst_UpdateWeight ( Route * route, EDGES * edges ) {
+    for ( auto & edge : *edges ) {
+        route->edgeWeights[ edge ] = route->edgeUtils[ edge ] + 1;
+    } 
 }

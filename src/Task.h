@@ -4,7 +4,7 @@
 #include "Point.h"
 
 typedef int EDGE;
-typedef vector<EDGE> EDGES;
+typedef set<EDGE, less<EDGE> > EDGES;
 
 void            Edg_Free            ( EDGES * edges );
 
@@ -21,7 +21,7 @@ typedef vector<Task> Tasks;
 
 Task            Tsk_Init            ( Point start, Point end );
 bool            Tsk_HasResult       ( const Task & task );
-const EDGES &   Tsk_GetResult       ( const Task & task );
+EDGES *         Tsk_GetResult       ( const Task & task );
 int             Tsk_GetWirelength   ( const Task & task );
 void            Tsk_Append          ( Task & task, EDGE edge );
 void            Tsk_CleanResult     ( Task & task );
