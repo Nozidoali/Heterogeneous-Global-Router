@@ -71,3 +71,7 @@ void Edg_Free ( EDGES * edges ) {
     edges->clear();
     delete edges; edges = NULL;
 }
+
+int Tsk_GetScale ( const Task & task ) {
+    return min( abs(task.start.x-task.end.x), abs(task.start.y-task.end.y) ) + 1;
+}

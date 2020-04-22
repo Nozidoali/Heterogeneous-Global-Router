@@ -15,7 +15,7 @@ struct Net
     int overflow;
     int id ; 		            /* ID of the net */
     int numPins;                /* number of pins */
-    Point * pins; 		        /* array of pins (or terminals) of the net. */
+    vector<Point> pins; 		/* array of pins (or terminals) of the net. */
     EDGES * edges;              /* solution of the net */
     Point upper, lower;
     
@@ -25,6 +25,11 @@ struct Net
 Tasks *         Net_CreateTaskMST   ( Net * net );
 Tasks *         Net_CreateTask      ( Net * net );
 void            Net_CollectResult   ( Net * net, Tasks * tasks );
+
+//==================================Edge Management==========================//
+void            Net_RemoveEdge      ( Net * net, EDGES::iterator edge );
+void            Net_AddEdge         ( Net * net, EDGE edge );
+void            Net_AddEdges        ( Net * net, EDGES * edges );
 
 //==================================Features=================================//
 int             Net_GetWirelength   ( const Net * net );

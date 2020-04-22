@@ -23,6 +23,7 @@ Task            Tsk_Init            ( Point start, Point end );
 bool            Tsk_HasResult       ( const Task & task );
 EDGES *         Tsk_GetResult       ( const Task & task );
 int             Tsk_GetWirelength   ( const Task & task );
+int             Tsk_GetScale        ( const Task & task );
 void            Tsk_Append          ( Task & task, EDGE edge );
 void            Tsk_CleanResult     ( Task & task );
 void            Tsk_Free            ( Tasks * pTasks );

@@ -88,7 +88,7 @@ void Net_Free( Net * net ) {
     if ( Net_HasResult( net ) ) {
         Net_CleanResult( net );
     }
-    delete [] net->pins; net->pins = NULL;
+    net->pins.clear();
 }
 
 int Net_GetOverflow( const Net * net ) {
@@ -97,4 +97,18 @@ int Net_GetOverflow( const Net * net ) {
 
 int Net_GetArea ( const Net * net ) {
     return net->lower / net->upper;
+}
+
+void Net_RemoveEdge ( Net * net, EDGES::iterator edge ) {
+    net->edges->erase( edge );
+}
+
+void Net_AddEdge ( Net * net, EDGE edge ) {
+    net->edges->insert( edge );
+}
+
+void Net_AddEdges ( Net * net, EDGES * edges ) {
+    for ( auto & edge : *edges ) {
+        Net_AddEdge( net, edge );
+    }
 }

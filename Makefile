@@ -33,9 +33,16 @@ clean :
 	if [ -f $(TARGET) ]; then rm $(TARGET); fi
 
 project : clean init $(TARGET)
-	sh ./testing/route.sh
-	sh ./testing/evaluate.sh
-
+	time ./ROUTER.exe -d=1 -n=1 benchmarks/adaptec1.gr benchmarks/adaptec1.out
+	./556_eval.exe benchmarks/adaptec1.gr benchmarks/adaptec1.out 0
+	./556_eval.exe benchmarks/adaptec1.gr benchmarks/adaptec1.out 1
+	time ./ROUTER.exe -d=1 -n=1 benchmarks/adaptec2.gr benchmarks/adaptec2.out
+	./556_eval.exe benchmarks/adaptec2.gr benchmarks/adaptec2.out 0
+	./556_eval.exe benchmarks/adaptec2.gr benchmarks/adaptec2.out 1
+	time ./ROUTER.exe -d=1 -n=1 benchmarks/adaptec3.gr benchmarks/adaptec3.out
+	./556_eval.exe benchmarks/adaptec3.gr benchmarks/adaptec3.out 0
+	./556_eval.exe benchmarks/adaptec3.gr benchmarks/adaptec3.out 1
+	
 leak:  clean init $(TARGET)
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./ROUTER.exe -d=1 -n=1 benchmarks/test.gr benchmarks/test.out
 
