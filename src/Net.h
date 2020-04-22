@@ -4,7 +4,7 @@
 #include "Task.h"
 
 typedef pair<Point,Point> SEGMENT;
-typedef vector<SEGMENT> SEGMENTS;
+typedef vector<EDGES> SEGMENTS;
 /**
  * A structure to represent nets
  */
@@ -17,7 +17,6 @@ struct Net
     int numPins;                /* number of pins */
     Point * pins; 		        /* array of pins (or terminals) of the net. */
     EDGES * edges;              /* solution of the net */
-    SEGMENTS segments;
     Point upper, lower;
     
 };
@@ -28,13 +27,16 @@ Tasks *         Net_CreateTask      ( Net * net );
 void            Net_CollectResult   ( Net * net, Tasks * tasks );
 
 //==================================Features=================================//
-int             Net_GetWirelength   ( Net * net );
-int             Net_GetOverflow     ( Net * net );
-int             Net_GetArea         ( Net * net );
-bool            Net_HasResult       ( Net * net );
+int             Net_GetWirelength   ( const Net * net );
+int             Net_GetOverflow     ( const Net * net );
+int             Net_GetArea         ( const Net * net );
+bool            Net_HasResult       ( const Net * net );
 
 //==================================Memory Control===========================//
 void            Net_CleanResult     ( Net * net );
 void            Net_Free            ( Net * net );
+
+//==================================Printing=================================//
+void            Net_PrintResult     ( const Net * net );
 
 #endif

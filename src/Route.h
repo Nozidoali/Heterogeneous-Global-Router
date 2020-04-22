@@ -23,6 +23,7 @@ struct Route
     bool isDecomposition;
     bool isOrdered;
 
+    int overflow;
 };
 
 //==================================Memory Control===========================//
@@ -55,11 +56,8 @@ int                 Rst_EdgesOverflow   ( Route * route, EDGES * edge );
 int                 Rst_EdgeWeight      ( Route * route, EDGE edge );
 int                 Rst_EdgesWeight     ( Route * route, EDGES * edge );
 
-bool                Rst_PointIsValid    ( Route * route, Point point );
-void                Rst_UpdateSegment   ( Route * route, Net * net, EDGES * edges );
-
 //==================================Util Features============================//
-void                Rst_UpdateUtil      ( Route * route, EDGES * edges );
+int                 Rst_UpdateUtil      ( Route * route, EDGES * edges );
 void                Rst_CleanUtil       ( Route * route );
 int                 Rst_ReleaseUtil     ( Route * route, EDGES * edges );
 
@@ -67,4 +65,12 @@ int                 Rst_ReleaseUtil     ( Route * route, EDGES * edges );
 void                Rst_InitWeight      ( Route * route );
 void                Rst_UpdateWeight    ( Route * route, EDGES * edges );
 
+//==================================Print Stats==============================//
+void                Rst_PrintStat       ( Route * route );
+void                Rst_PrintNetResult  ( Route * route, Net * net );
+
+
+//==================================Others===================================//
+bool                Rst_PointIsValid    ( Route * route, Point point );
+int                 Rst_GetOverflow     ( Route * route );
 #endif

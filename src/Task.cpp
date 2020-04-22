@@ -57,8 +57,7 @@ EDGES * Tsk_CollectResult ( Tasks * pTasks ) {
     EDGES * edges = new EDGES;
     for ( auto & task : *pTasks ) {
         assert( Tsk_HasResult( task ) );
-        EDGES edges_copy = *( Tsk_GetResult( task ) );
-        for ( auto & edge : *edges ) {
+        for ( auto & edge : *(task.edges) ) {
             edges->insert( edge );
         }
     }

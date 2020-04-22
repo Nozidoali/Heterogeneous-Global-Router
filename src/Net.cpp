@@ -68,16 +68,15 @@ void Net_CollectResult( Net * net, Tasks * tasks ) {
 
 }
 
-int Net_GetWirelength( Net * net ) {
+int Net_GetWirelength( const Net * net ) {
     return (int)net->edges->size();
 }
 
-bool Net_HasResult( Net * net ) {
+bool Net_HasResult( const Net * net ) {
     return net->edges != NULL;
 }
 
 void Net_CleanResult( Net * net ) {
-    net->segments.clear();
     net->edges->clear();
     delete net->edges;
     net->edges = NULL;
@@ -92,10 +91,10 @@ void Net_Free( Net * net ) {
     delete [] net->pins; net->pins = NULL;
 }
 
-int Net_GetOverflow( Net * net ) {
+int Net_GetOverflow( const Net * net ) {
     return net->overflow;
 }
 
-int Net_GetArea ( Net * net ) {
+int Net_GetArea ( const Net * net ) {
     return net->lower / net->upper;
 }
