@@ -27,6 +27,7 @@ int main(int argc, char **argv)
     try {
         Route * route = Rst_Start( isDecomposition, isOrdered );
         Rst_ReadFile    ( route, inputFileName );
+        Rst_Init        ( route );
         Rst_Solve       ( route );
         Rst_WriteFile   ( route, outputFileName );
         Rst_Stop        ( route );
@@ -34,7 +35,7 @@ int main(int argc, char **argv)
     catch( Exception ) {
         return 1;
     }
-    
+
  	cout << "\nDONE!" << endl;	
  	return 0;
 }

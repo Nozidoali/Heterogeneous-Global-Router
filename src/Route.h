@@ -4,6 +4,13 @@
 #include "Net.h"
 #include "Logic_Timer.h"
 
+enum MODE {
+    EASY,
+    MEDIUM,
+    DIFFICULT,
+    HARD
+};
+
 typedef int UNIQUE_POINT;
 struct Route 
 {
@@ -18,18 +25,31 @@ struct Route
 
     int numEdges ; 	/* number of edges of the grid */
     int *edgeCaps; 	/* array of the actual edge capacities after considering for blockages */
-    int *edgeUtils;	/* array of edge utilizations */  
+    int *edgeUtils;	/* array of edge utilizations */
+    int *edgeReserveCaps;	/* array of edge utilizations */  
     int *edgeWeights;
 
     bool isDecomposition;
     bool isOrdered;
 
     int overflow;
+
+//==================================Parameters===============================//
+    int Initial_Max_Difficulty;
+    int Initial_Max_TaskScale;
+    int Reroute_Max_NetArea;
+    int Reroute_Max_Complexity; // Scale * difficulty
+    int Reroute_Max_Difficulty;
+
 };
 
 //==================================Memory Control===========================//
 Route *             Rst_Start       ( bool isDecomposition, bool isOrdered );
 void                Rst_Stop        ( Route * route );
+
+//==================================Initialization===========================//
+void                Rst_Init        ( Route * route );
+void                Rst_NetInitTasks( Route * route, Net * net );
 
 //==================================Index Convertion=========================//
 int                 Rst_PintoEdge   ( Route * route, Point a, Point b );
@@ -58,17 +78,18 @@ void                Rst_FixNet          ( Route * route, Net * net );
 void                Rst_FixEdge         ( Route * route, EDGE edge );
 
 //==================================Edge Features============================//
-int                 Rst_EdgeOverflow    ( Route * route, EDGE edge );
-int                 Rst_EdgesOverflow   ( Route * route, EDGES * edge );
 int                 Rst_EdgeWeight      ( Route * route, EDGE edge );
+int                 Rst_EdgeOverflow    ( Route * route, EDGE edge );
 int                 Rst_EdgesWeight     ( Route * route, EDGES * edge );
+int                 Rst_EdgesOverflow   ( Route * route, EDGES * edge );
+int                 Rst_GetOverflow     ( Route * route );
 
 //==================================Util Features============================//
-int                 Rst_UpdateUtil      ( Route * route, EDGES * edges );
-int                 Rst_ReleaseUtil     ( Route * route, EDGES * edges );
-int                 Rst_UpdateUtil      ( Route * route, EDGE edge );
-int                 Rst_ReleaseUtil     ( Route * route, EDGE edge );
 void                Rst_CleanUtil       ( Route * route );
+int                 Rst_UpdateUtil      ( Route * route, EDGES * edges );
+int                 Rst_UpdateUtil      ( Route * route, EDGE edge );
+int                 Rst_ReleaseUtil     ( Route * route, EDGES * edges );
+int                 Rst_ReleaseUtil     ( Route * route, EDGE edge );
 
 //==================================Weight Features==========================//
 void                Rst_InitWeight      ( Route * route );
@@ -79,8 +100,15 @@ void                Rst_PrintStat       ( Route * route );
 void                Rst_PrintNetResult  ( Route * route, Net * net );
 void                Rst_PrintHeader     ( Route * route );
 
-
 //==================================Others===================================//
 bool                Rst_PointIsValid    ( Route * route, Point point );
-int                 Rst_GetOverflow     ( Route * route );
+
+//==================================Capacity=================================//
+void                Rst_ReserveCap      ( Route * route );
+void                Rst_ReleaseCap      ( Route * route );
+
+//==================================Mode Selection===========================//
+MODE                Rst_GetMode         ( Route * route );
+void                Rst_SetMode         ( Route * route, MODE mode );
+
 #endif

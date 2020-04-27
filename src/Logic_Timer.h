@@ -12,3 +12,4 @@ typedef std::chrono::high_resolution_clock Clock;
 
 void Tmr_Start();
 string Tmr_ToString();
+int Tmr_TimeLeft();

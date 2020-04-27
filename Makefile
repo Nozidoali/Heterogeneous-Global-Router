@@ -5,7 +5,7 @@
 # ======================================================= #
 
 CC 	   	= 	g++
-CFLAGS 	= 	-Wall
+CFLAGS 	= 	-Wall -O2
 TARGET 	= 	ROUTER.exe
 
 SRC_DIR = 	./src
@@ -78,5 +78,5 @@ $(TARGET) 		: 	$(OBJ)
 	$(CC) $(CFLAGS) -o $@ $? $(LIB)
 
 ${OBJ_DIR}/%.o	:	${SRC_DIR}/%.cpp
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) -c $< -o $@
 

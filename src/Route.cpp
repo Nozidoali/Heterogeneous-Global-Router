@@ -5,6 +5,10 @@ Route * Rst_Start( bool isDecomposition, bool isOrdered ) {
     route->overflow = 0;
     route->isDecomposition = isDecomposition;
     route->isOrdered = isOrdered;
+    route->edgeCaps = NULL;
+    route->edgeReserveCaps = NULL;
+    route->edgeUtils = NULL;
+    route->edgeUtils = NULL;
     return route;
 }
 
@@ -15,6 +19,7 @@ void Rst_Stop( Route * route ) {
     delete [] route->nets; route->nets = NULL;
     delete [] route->edgeCaps; route->edgeCaps = NULL;
     delete [] route->edgeUtils; route->edgeUtils = NULL;
+    delete [] route->edgeReserveCaps; route->edgeReserveCaps = NULL;
     delete [] route->edgeWeights; route->edgeWeights = NULL;
     delete route; route = NULL;
 }
@@ -71,6 +76,7 @@ void Rst_ReadFile( Route * route, const char * inputFilename ) {
             route->numEdges = 2*route->gx*route->gy - route->gx - route->gy;
             route->edgeCaps = new int[route->gx*route->gy*2];
             route->edgeUtils = new int[route->gx*route->gy*2];
+            route->edgeReserveCaps = new int[route->gx*route->gy*2];
             route->edgeWeights = new int[route->gx*route->gy*2];
         }
         else if (command == "capacity") {
@@ -96,6 +102,8 @@ void Rst_ReadFile( Route * route, const char * inputFilename ) {
                     route->nets[i].pins.reserve( route->nets[i].numPins );
                     route->nets[i].upper = Point( 0, 0 );
                     route->nets[i].lower = Point( route->gx, route->gy );
+                    route->nets[i].pTasks = NULL;
+                    route->nets[i].edges  = NULL;
                     for (int j=0; j<route->nets[i].numPins; j++) {
                         // read the x,y coordinates of the pin
                         int x, y;
@@ -137,19 +145,27 @@ void Rst_WriteFile ( Route * route, const char * outputFileName ) {
         assert( Net_HasResult( route->nets+i ) );
 
         for ( auto & edge : *(route->nets[i].edges) ) {
-            foutput << Rst_EdgetoPin( route, edge ).first.toString() << "-";
+            foutput << Rst_EdgetoPin( route, edge ).first.toString() << "-"; 
+            foutput.flush();
             foutput << Rst_EdgetoPin( route, edge ).second.toString() << endl;
+            foutput.flush();
         }
         foutput << "!" << endl;
     }
+    foutput.close();
     return;
 }
 
-bool CMP_NetOverFlow    ( const Net & a, const Net & b )   { return a.overflow > b.overflow; }
-bool CMP_NetArea        ( const Net & a, const Net & b )   { return (a.upper/a.lower) > (b.upper/b.lower); }
-bool CMP_NetCost        ( const Net & a, const Net & b )   { return a.cost > b.cost; }
+bool CMP_NetOverFlowInc ( const Net & a, const Net & b )   { return a.overflow < b.overflow; }
+bool CMP_NetAreaInc     ( const Net & a, const Net & b )   { return (a.upper/a.lower) > (b.upper/b.lower); }
+bool CMP_NetCostDec     ( const Net & a, const Net & b )   { return a.cost > b.cost; }
 bool CMP_NetWirelength  ( const Net & a, const Net & b )   { return Net_GetWirelength(&a) > Net_GetWirelength(&b); }
 void Rst_Solve( Route * route ) {
+
+    // Get the appropriate mode and set the parameter
+    MODE mode = Rst_GetMode( route );
+    Rst_SetMode( route, mode );
+
     Tmr_Start();
 
     Rst_PrintHeader ( route );
@@ -163,16 +179,15 @@ void Rst_Solve( Route * route ) {
         cout.width(10); cout << Tmr_ToString() << "\r"; fflush(stdout);        
     };
 
-    
-
     // Net Ordering
     if ( route->isOrdered ) 
-        sort( route->nets, route->nets+route->numNets, CMP_NetArea );
+        sort( route->nets, route->nets+route->numNets, CMP_NetAreaInc );
 
     // Initial Solution
     for (int i=0;i<route->numNets;i++) {
         Rst_SolveNetInitial( route, route->nets+i );
         printStats( i );
+        // cerr << i << "," << route->overflow << endl;;
     }
 
     // Calculate Net Costs
@@ -182,8 +197,8 @@ void Rst_Solve( Route * route ) {
     }
 
     // Net Ordering
-    if ( route->isOrdered ) 
-        sort( route->nets, route->nets+route->numNets, CMP_NetWirelength );  
+    if ( route->isOrdered )
+        sort( route->nets, route->nets+route->numNets, CMP_NetCostDec );  
     
     // Rip-up and Reroute
     Tmr_Start();
@@ -191,6 +206,7 @@ void Rst_Solve( Route * route ) {
         cout << endl;
         for (int i=0;i<route->numNets;i++) {
             Rst_RerouteNet( route, route->nets+i );
+            // cerr << route->numNets+i << "," << route->overflow << endl;
             printStats( i );
         }
     }
@@ -199,27 +215,30 @@ void Rst_Solve( Route * route ) {
 void Rst_SolveNetInitial( Route * route, Net * net ) {
 
     assert( !Net_HasResult( net ) );
-    Tasks * pTasks = route->isDecomposition? Net_CreateTaskMST( net ) : Net_CreateTask( net );
-    for( auto & task : *pTasks ) {
+    assert( Net_HasTasks( net ) );
 
+    for( auto & task : *(net->pTasks) ) {
         // try to solve without overflow
-        Tsk_SetDifficulty( task, 1 );
-        if( Rst_SolveTaskSearch( route, task, false ) ) {
+        Tsk_SetDifficulty( task, route->Initial_Max_Difficulty );
+
+        // skip the large task to save time
+        if( Tsk_GetScale( task ) <= route->Initial_Max_TaskScale && Rst_SolveTaskSearch( route, task, false ) ) {
             continue;
         }
         Rst_SolveTaskInitial( route, task );
+
     }
-    Net_CollectResult( net, pTasks );
+    Net_CollectResult( net );
     net->overflow = Rst_UpdateUtil( route, net->edges );
-    Tsk_Free( pTasks );
 
 }
 
 void Rst_SolveNet( Route * route, Net * net ) {
 
     assert( !Net_HasResult( net ) );
-    Tasks * pTasks = route->isDecomposition? Net_CreateTaskMST( net ) : Net_CreateTask( net );
-    for( auto & task : *pTasks ) {
+    assert( Net_HasTasks( net ) );
+
+    for( auto & task : *(net->pTasks) ) {
         Tsk_SetDifficulty( task, 3 );
         if ( !Rst_SolveTaskSearch( route, task, true ) ) {
             Tsk_SetDifficulty( task, 0 );
@@ -227,13 +246,14 @@ void Rst_SolveNet( Route * route, Net * net ) {
         }
         assert( Tsk_HasResult( task ) );
     }
-    Net_CollectResult( net, pTasks );
+    Net_CollectResult( net );
     net->overflow = Rst_UpdateUtil( route, net->edges );
-    Tsk_Free( pTasks );
 
 }
 
 bool Rst_SolveTaskSearch ( Route * route, Task & task, bool isOpt ) {
+
+    assert ( !Tsk_HasResult(task) ); 
     struct Stage {
         int cost;
         Point pos;
@@ -310,7 +330,8 @@ bool Rst_SolveTaskSearch ( Route * route, Task & task, bool isOpt ) {
 
 Point Rst_SolveTaskInitial_Helper ( Route * route, Task & task, Point start, Point end ) {
 
-    assert( task.edges != NULL );
+    assert( Tsk_HasResult( task ) );
+    
     if ( start == end ) {
         return end;
     }
@@ -336,7 +357,8 @@ Point Rst_SolveTaskInitial_Helper ( Route * route, Task & task, Point start, Poi
 
 void Rst_SolveTaskInitial ( Route * route, Task & task ) {
 
-    assert( task.edges == NULL );
+    assert( !Tsk_HasResult( task ) );
+
     task.edges = new EDGES;
 
     Point start = task.start;
@@ -348,7 +370,7 @@ void Rst_SolveTaskInitial ( Route * route, Task & task ) {
 
 void Rst_SolveTaskLSeg ( Route * route, Task & task ) {
 
-    assert( task.edges == NULL );
+    assert( !Tsk_HasResult( task ) );
     task.edges = new EDGES;
 
     Point & start = task.start;
@@ -461,12 +483,18 @@ int Rst_ReleaseUtil ( Route * route, EDGE edge ) {
 int Rst_RerouteNet ( Route * route, Net * net ) {
     
     assert( Net_HasResult( net ) );
+
+    // skip too large network
+    if ( Net_GetArea( net ) >= route->Reroute_Max_NetArea ) {
+        return -1;
+    }
     
     // clean the utility, store the overflow released
     int oldOverflow = Rst_ReleaseUtil( route, net->edges );
 
-    Tasks * pTasks = route->isDecomposition? Net_CreateTaskMST( net ) : Net_CreateTask( net );
-    for( auto & task : *pTasks ) {
+    for( auto & task : *(net->pTasks) ) {
+
+        Tsk_CleanResult( task );
 
         for ( int difficulty = 1; ; difficulty <<= 1 ) {
             Tsk_SetDifficulty( task, difficulty );
@@ -477,7 +505,7 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
             }
 
             // break if we have tried enough
-            if ( difficulty * Tsk_GetScale( task ) >= 128 || difficulty >= 64 ) {
+            if ( difficulty * Tsk_GetScale( task ) >= route->Reroute_Max_Complexity || difficulty >= route->Reroute_Max_Difficulty ) {
                 Tsk_SetDifficulty( task, 4 );
                 Rst_SolveTaskSearch( route, task, false );
                 break;
@@ -485,14 +513,13 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
         }
         assert( Tsk_HasResult( task ) );
     }
-    EDGES * edges = Tsk_CollectResult( pTasks );
+    EDGES * edges = Tsk_CollectResult( net->pTasks );
     int newOverflow = Rst_EdgesOverflow( route, edges );
 
     // skip update if new result is worse
     if ( oldOverflow <= newOverflow ) {
         Rst_UpdateUtil( route, net->edges );
         Edg_Free( edges ); 
-        Tsk_Free( pTasks );
         return -1;
     }
 
@@ -505,7 +532,6 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
     Rst_UpdateUtil( route, net->edges );
     Rst_UpdateWeight( route, net->edges );
 
-    Tsk_Free( pTasks );
     return oldOverflow - newOverflow;
 }
 
@@ -543,8 +569,12 @@ int Rst_GetOverflow ( Route * route ) {
 }
 
 void Rst_PrintNetResult ( Route * route, Net * net ) {
+
+    assert( route && net );
+    assert( Net_HasResult( net ) );
     cout << "n" << net->id << endl;
     for ( auto & edge : *( net->edges ) ) {
+        cout << edge << endl;
         cout << Rst_EdgetoPin( route, edge ).first.toString()  << "-";
         cout << Rst_EdgetoPin( route, edge ).second.toString() << endl;
     }
@@ -650,4 +680,64 @@ void  Rst_PrintHeader ( Route * route ) {
     cout.width(30); cout << "Total Grid Size = " << route->gx << " * " << route->gy << endl;
 
     cout << endl;
+}
+
+void Rst_ReserveCap ( Route * route ) {
+    for ( int i=0;i<2*route->gx*route->gy;i++ ) {
+        if ( route->edgeCaps[i] > route->edgeUtils[i] ) {
+            continue;
+        } 
+        route->edgeReserveCaps[i] = route->edgeUtils[i] - route->edgeCaps[i];
+        route->edgeCaps[i] -= route->edgeReserveCaps[i];
+        route->overflow += route->edgeReserveCaps[i];
+    }
+}
+void  Rst_ReleaseCap ( Route * route ) {
+    for ( int i=0;i<2*route->gx*route->gy;i++ ) {
+
+        route->overflow -= Rst_EdgeOverflow( route, i ); 
+        route->edgeCaps[i] += route->edgeReserveCaps[i];
+        route->edgeReserveCaps[i] = 0;
+        route->overflow += Rst_EdgeOverflow( route, i ); 
+
+    }
+}
+
+void Rst_NetInitTasks ( Route * route, Net * net ) {
+
+    // make sure the tasks are not initialized
+    assert( !Net_HasTasks( net ) );
+
+    net->pTasks = route->isDecomposition? Net_CreateTaskMST( net ) : Net_CreateTask( net );
+    
+    // make sure nets are initialized correctly
+    assert( Net_HasTasks( net ) );
+
+}
+
+void Rst_Init ( Route * route ) {
+    for ( int i=0;i<route->numNets;i++ ) {
+        Rst_NetInitTasks( route, route->nets+i );
+    } 
+}
+
+MODE Rst_GetMode ( Route * route ) {
+    return EASY;
+}
+
+void Rst_SetMode ( Route * route, MODE mode ) {
+    switch ( mode )
+    {
+    // Adaptec2 is EASY
+    case EASY:
+        route->Initial_Max_Difficulty   = 3;
+        route->Initial_Max_TaskScale    = 20;
+        route->Reroute_Max_Difficulty   = 64;
+        route->Reroute_Max_Complexity   = 128;
+        route->Reroute_Max_NetArea      = 400;
+        break;
+    
+    default:
+        break;
+    }
 }

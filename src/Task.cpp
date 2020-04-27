@@ -54,6 +54,7 @@ void Tsk_SetDifficulty ( Task & task, int difficulty ) {
 
 EDGES * Tsk_CollectResult ( Tasks * pTasks ) {
 
+    assert( pTasks != NULL );
     EDGES * edges = new EDGES;
     for ( auto & task : *pTasks ) {
         assert( Tsk_HasResult( task ) );
@@ -74,4 +75,8 @@ void Edg_Free ( EDGES * edges ) {
 
 int Tsk_GetScale ( const Task & task ) {
     return min( abs(task.start.x-task.end.x), abs(task.start.y-task.end.y) ) + 1;
+}
+
+int Tsk_GetArea ( const Task & task ) {
+    return task.start / task.end;
 }

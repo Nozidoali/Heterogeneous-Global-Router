@@ -61,10 +61,13 @@ Tasks * Net_CreateTaskMST( Net * net ) {
     return ptasks;
 }
 
-void Net_CollectResult( Net * net, Tasks * tasks ) {
+void Net_CollectResult( Net * net ) {
 
+    // make sure tasks are available but not yet collected
     assert( !Net_HasResult( net ) );
-    net->edges = Tsk_CollectResult( tasks );
+    assert( Net_HasTasks( net ) );
+
+    net->edges = Tsk_CollectResult( net->pTasks );
 
 }
 
@@ -87,6 +90,10 @@ void Net_Free( Net * net ) {
         return;
     if ( Net_HasResult( net ) ) {
         Net_CleanResult( net );
+    }
+    if ( Net_HasTasks( net ) ) {
+        Tsk_Free( net->pTasks );
+        net->pTasks = NULL;
     }
     net->pins.clear();
 }
@@ -111,4 +118,8 @@ void Net_AddEdges ( Net * net, EDGES * edges ) {
     for ( auto & edge : *edges ) {
         Net_AddEdge( net, edge );
     }
+}
+
+bool Net_HasTasks ( const Net * net ) {
+    return ( net->pTasks != NULL);
 }

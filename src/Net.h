@@ -18,13 +18,13 @@ struct Net
     vector<Point> pins; 		/* array of pins (or terminals) of the net. */
     EDGES * edges;              /* solution of the net */
     Point upper, lower;
-    
+    Tasks * pTasks;
 };
 
 //==================================Task Management==========================//
 Tasks *         Net_CreateTaskMST   ( Net * net );
 Tasks *         Net_CreateTask      ( Net * net );
-void            Net_CollectResult   ( Net * net, Tasks * tasks );
+void            Net_CollectResult   ( Net * net );
 
 //==================================Edge Management==========================//
 void            Net_RemoveEdge      ( Net * net, EDGES::iterator edge );
@@ -36,6 +36,7 @@ int             Net_GetWirelength   ( const Net * net );
 int             Net_GetOverflow     ( const Net * net );
 int             Net_GetArea         ( const Net * net );
 bool            Net_HasResult       ( const Net * net );
+bool            Net_HasTasks        ( const Net * net );
 
 //==================================Memory Control===========================//
 void            Net_CleanResult     ( Net * net );
