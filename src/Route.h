@@ -40,7 +40,7 @@ struct Route
 //==================================Parameters===============================//
     int Initial_Max_Difficulty;
     int Initial_Max_TaskScale;
-    int Reroute_Max_NetArea;
+    int Reroute_Max_TaskScale;
     int Reroute_Max_Complexity; // Scale * difficulty
     int Reroute_Max_Difficulty;
 

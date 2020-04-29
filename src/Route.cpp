@@ -227,58 +227,24 @@ void Rst_Solve( Route * route ) {
     Tmr_Start();
     if ( route->isOrdered || route->isDecomposition ) {
         cout << endl;
-        for (int i=0;i<route->numNets;i++) {
+        bool timeUp = false;
+        int maxTime = 10;
+        while ( !timeUp && --maxTime ) {
+            for (int i=0;i<route->numNets;i++) {
 
-            // break if time is up
-            if ( Tmr_TimeLeft() == 0 ) {
-                break;
-            }
-            
-            Rst_ReduceNet( route, route->nets+i );
-            // cerr << route->numNets+i << "," << route->overflow << endl;
-            printStats( i );
+                // break if time is up
+                if ( Tmr_TimeLeft() == 0 ) {
+                    timeUp = true;
+                    break;
+                }
+                
+                Rst_ReduceNet( route, route->nets+i );
+                // cerr << route->numNets+i << "," << route->overflow << endl;
+                printStats( i );
+            }            
         }
 
-        for (int i=0;i<route->numNets;i++) {
 
-            // break if time is up
-            if ( Tmr_TimeLeft() == 0 ) {
-                break;
-            }
-            
-            Rst_ReduceNet( route, route->nets+i );
-            // cerr << route->numNets+i << "," << route->overflow << endl;
-            printStats( i );
-        }
-
-        for (int i=0;i<route->numNets;i++) {
-
-            // break if time is up
-            if ( Tmr_TimeLeft() == 0 ) {
-                break;
-            }
-            
-            Rst_ReduceNet( route, route->nets+i );
-            // cerr << route->numNets+i << "," << route->overflow << endl;
-            printStats( i );
-        }
-    }
-
-    Tmr_Start();
-    if ( route->isOrdered || route->isDecomposition ) {
-        cout << endl;
-        cout << "Fixing" << endl;
-        for (int i=0;i<route->numNets;i++) {
-
-            // break if time is up
-            if ( Tmr_TimeLeft() == 0 ) {
-                break;
-            }
-
-            Rst_FixNet( route, route->nets+i );
-            Rst_FixNet( route, route->nets+i );
-            // cerr << route->numNets+i << "," << route->overflow << endl;
-        }
     }
 
 }
@@ -561,6 +527,11 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
     int oldOverflow = Rst_ReleaseUtil( route, net->edges );
 
     for( auto & task : *(net->pTasks) ) {
+
+        // skip large task
+        if ( Tsk_GetScale( task ) >= route->Reroute_Max_TaskScale ) {
+            continue;
+        }
 
         Tsk_CleanResult( task );
 
@@ -905,7 +876,7 @@ void Rst_Init ( Route * route ) {
 }
 
 MODE Rst_GetMode ( Route * route ) {
-    return EASY;
+    return MEDIUM;
 }
 
 void Rst_SetMode ( Route * route, MODE mode ) {
@@ -917,16 +888,16 @@ void Rst_SetMode ( Route * route, MODE mode ) {
         route->Initial_Max_TaskScale    = 20;
         route->Reroute_Max_Difficulty   = 64;
         route->Reroute_Max_Complexity   = 1024;
-        route->Reroute_Max_NetArea      = 10000;
+        route->Reroute_Max_TaskScale    = 2147483647;
         break;
     
     // Adaptec1 is MEDIUM
     case MEDIUM:
-        route->Initial_Max_Difficulty   = 3;
-        route->Initial_Max_TaskScale    = -1;
-        route->Reroute_Max_Difficulty   = 256;
-        route->Reroute_Max_Complexity   = 512;
-        route->Reroute_Max_NetArea      = 10;
+        route->Initial_Max_Difficulty   = 2;
+        route->Initial_Max_TaskScale    = 10;
+        route->Reroute_Max_Difficulty   = 32;
+        route->Reroute_Max_Complexity   = 128;
+        route->Reroute_Max_TaskScale    = 100;
         break;
     
     // Adaptec1 is MEDIUM
