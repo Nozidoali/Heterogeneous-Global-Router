@@ -219,11 +219,16 @@ void Rst_Solve( Route * route ) {
         }
     }
 
+    // skip global search if net is not easy
+    if ( Rst_GetMode( route) != EASY ) {
+        return;
+    }
+
     // Net Ordering
     if ( route->isOrdered )
         sort( route->nets, route->nets+route->numNets, CMP_NetOverFlowInc );  
 
-    // Rip-up and Reroute
+    // Try Global Search
     Tmr_Start();
     if ( route->isOrdered || route->isDecomposition ) {
         cout << endl;
@@ -876,7 +881,18 @@ void Rst_Init ( Route * route ) {
 }
 
 MODE Rst_GetMode ( Route * route ) {
-    return MEDIUM;
+
+    if ( route->numNets < 200000 ) {
+        // adaptec1
+        return MEDIUM;
+    }
+
+    if ( route->numNets < 300000 ) {
+        // adaptec2
+        return EASY;
+    }
+
+    return DIFFICULT;
 }
 
 void Rst_SetMode ( Route * route, MODE mode ) {
@@ -902,11 +918,11 @@ void Rst_SetMode ( Route * route, MODE mode ) {
     
     // Adaptec1 is MEDIUM
     case DIFFICULT:
-        route->Initial_Max_Difficulty   = 0;
-        route->Initial_Max_TaskScale    = 100;
-        route->Reroute_Max_Difficulty   = 1;
-        route->Reroute_Max_Complexity   = 16;
-        route->Reroute_Max_TaskScale      = 10000;
+        route->Initial_Max_Difficulty   = 2;
+        route->Initial_Max_TaskScale    = 10;
+        route->Reroute_Max_Difficulty   = 32;
+        route->Reroute_Max_Complexity   = 128;
+        route->Reroute_Max_TaskScale    = 100;
         break;
     
     default:
@@ -988,6 +1004,8 @@ double Rst_GetEstimation ( Route * route, Point start, Point end ) {
 }
 
 void Rst_InitEstimation ( Route * route ) {
+
+    return;
 
     // has not been initialized
     assert( route->utilExp == NULL );
