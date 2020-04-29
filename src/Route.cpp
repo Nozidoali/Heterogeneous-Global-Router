@@ -921,20 +921,20 @@ void Rst_SetMode ( Route * route, MODE mode ) {
     
     // Adaptec1 is MEDIUM
     case MEDIUM:
-        route->Initial_Max_Difficulty   = 2;
+        route->Initial_Max_Difficulty   = 1;
         route->Initial_Max_TaskScale    = 10;
-        route->Reroute_Max_Difficulty   = 32;
-        route->Reroute_Max_Complexity   = 128;
-        route->Reroute_Max_TaskScale    = 200;
+        route->Reroute_Max_Difficulty   = 4;
+        route->Reroute_Max_Complexity   = 16;
+        route->Reroute_Max_TaskScale    = 512;
         break;
     
     // Adaptec1 is MEDIUM
     case DIFFICULT:
         route->Initial_Max_Difficulty   = 1;
         route->Initial_Max_TaskScale    = 10;
-        route->Reroute_Max_Difficulty   = 16;
-        route->Reroute_Max_Complexity   = 64;
-        route->Reroute_Max_TaskScale    = 64;
+        route->Reroute_Max_Difficulty   = 8;
+        route->Reroute_Max_Complexity   = 32;
+        route->Reroute_Max_TaskScale    = 128;
         break;
     
     default:
