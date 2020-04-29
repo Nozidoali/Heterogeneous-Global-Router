@@ -542,7 +542,7 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
     for( auto & task : *(net->pTasks) ) {
 
         // skip large task
-        if ( Tsk_GetScale( task ) >= route->Reroute_Max_TaskScale ) {
+        if ( Tsk_GetSize( task ) >= route->Reroute_Max_TaskScale ) {
             continue;
         }
 
@@ -925,16 +925,16 @@ void Rst_SetMode ( Route * route, MODE mode ) {
         route->Initial_Max_TaskScale    = 10;
         route->Reroute_Max_Difficulty   = 4;
         route->Reroute_Max_Complexity   = 16;
-        route->Reroute_Max_TaskScale    = 512;
+        route->Reroute_Max_TaskScale    = 20;
         break;
     
     // Adaptec1 is MEDIUM
     case DIFFICULT:
-        route->Initial_Max_Difficulty   = 1;
+        route->Initial_Max_Difficulty   = 0;
         route->Initial_Max_TaskScale    = 10;
         route->Reroute_Max_Difficulty   = 8;
         route->Reroute_Max_Complexity   = 32;
-        route->Reroute_Max_TaskScale    = 128;
+        route->Reroute_Max_TaskScale    = 20;
         break;
     
     default:
