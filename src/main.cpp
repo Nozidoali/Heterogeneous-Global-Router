@@ -29,6 +29,8 @@ int main(int argc, char **argv)
         Rst_ReadFile    ( route, inputFileName );
         Rst_Init        ( route );
         Rst_Solve       ( route );
+        Rst_PrintCapsDist ( route );
+        Rst_PrintWireDist ( route );
         Rst_WriteFile   ( route, outputFileName );
         Rst_Stop        ( route );
     }

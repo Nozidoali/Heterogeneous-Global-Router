@@ -19,5 +19,7 @@ string Tmr_ToString() {
 int Tmr_TimeLeft() {
     auto elap = steady_clock::now() - record;
     int minutes = chrono::duration_cast<chrono::minutes>(elap).count();
-    return max( 1, 15-minutes );
+    
+    // 10 minutes for each stage
+    return max( 0, 10-minutes );
 }

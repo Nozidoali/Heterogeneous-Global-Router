@@ -19,6 +19,8 @@ struct Net
     EDGES * edges;              /* solution of the net */
     Point upper, lower;
     Tasks * pTasks;
+
+    bool flag;
 };
 
 //==================================Task Management==========================//

@@ -97,7 +97,7 @@ void SegmentTree :: pushDown(int index, int length) {
 
 void SegmentTree :: update(int left, int right, int l, int r, int index, int val) {
     if (left <= l && r <= right) {
-        // if the relationship is relation
+        // if the relationship is addition
         // lazy[index] += val;
         // sum[index] += val*(r-l+1);
 

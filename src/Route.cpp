@@ -9,6 +9,7 @@ Route * Rst_Start( bool isDecomposition, bool isOrdered ) {
     route->edgeReserveCaps = NULL;
     route->edgeUtils = NULL;
     route->edgeUtils = NULL;
+    route->utilExp = NULL;
     return route;
 }
 
@@ -21,6 +22,7 @@ void Rst_Stop( Route * route ) {
     delete [] route->edgeUtils; route->edgeUtils = NULL;
     delete [] route->edgeReserveCaps; route->edgeReserveCaps = NULL;
     delete [] route->edgeWeights; route->edgeWeights = NULL;
+    Rst_ClearEstimation( route );
     delete route; route = NULL;
 }
 
@@ -205,9 +207,48 @@ void Rst_Solve( Route * route ) {
     if ( route->isOrdered || route->isDecomposition ) {
         cout << endl;
         for (int i=0;i<route->numNets;i++) {
+
+            // break if time is up
+            if ( Tmr_TimeLeft() == 0 ) {
+                break;
+            }
+            
             Rst_RerouteNet( route, route->nets+i );
             // cerr << route->numNets+i << "," << route->overflow << endl;
             printStats( i );
+        }
+    }
+
+    // Rip-up and Reroute
+    Tmr_Start();
+    if ( route->isOrdered || route->isDecomposition ) {
+        cout << endl;
+        for (int i=0;i<route->numNets;i++) {
+
+            // break if time is up
+            if ( Tmr_TimeLeft() == 0 ) {
+                break;
+            }
+            
+            Rst_ReduceNet( route, route->nets+i );
+            // cerr << route->numNets+i << "," << route->overflow << endl;
+            printStats( i );
+        }
+    }
+
+    Tmr_Start();
+    if ( route->isOrdered || route->isDecomposition ) {
+        cout << endl;
+        cout << "Fixing" << endl;
+        for (int i=0;i<route->numNets;i++) {
+
+            // break if time is up
+            if ( Tmr_TimeLeft() == 0 ) {
+                break;
+            }
+
+            Rst_FixNet( route, route->nets+i );
+            // cerr << route->numNets+i << "," << route->overflow << endl;
         }
     }
 
@@ -218,18 +259,16 @@ void Rst_SolveNetInitial( Route * route, Net * net ) {
     assert( Net_HasTasks( net ) );
 
     for( auto & task : *(net->pTasks) ) {
-        // try to solve without overflow
-        Tsk_SetDifficulty( task, route->Initial_Max_Difficulty );
 
-        // skip the large task to save time
-        if( Tsk_GetScale( task ) <= route->Initial_Max_TaskScale && Rst_SolveTaskSearch( route, task, false ) ) {
+        Tsk_SetDifficulty( task, route->Initial_Max_Difficulty );
+        if ( Tsk_GetSize( task ) < route->Initial_Max_TaskScale && Rst_SolveTaskSearch( route, task, true ) ) {
             continue;
         }
         Rst_SolveTaskInitial( route, task );
-
     }
     Net_CollectResult( net );
     net->overflow = Rst_UpdateUtil( route, net->edges );
+    assert( Net_HasResult( net ) );
 
 }
 
@@ -240,9 +279,9 @@ void Rst_SolveNet( Route * route, Net * net ) {
 
     for( auto & task : *(net->pTasks) ) {
         Tsk_SetDifficulty( task, 3 );
-        if ( !Rst_SolveTaskSearch( route, task, true ) ) {
+        if ( !Rst_SolveTaskSearch( route, task, 0 ) ) {
             Tsk_SetDifficulty( task, 0 );
-            Rst_SolveTaskSearch( route, task, false );
+            Rst_SolveTaskSearch( route, task, OF_MAX );
         }
         assert( Tsk_HasResult( task ) );
     }
@@ -254,6 +293,7 @@ void Rst_SolveNet( Route * route, Net * net ) {
 bool Rst_SolveTaskSearch ( Route * route, Task & task, bool isOpt ) {
 
     assert ( !Tsk_HasResult(task) ); 
+
     struct Stage {
         int cost;
         Point pos;
@@ -288,7 +328,7 @@ bool Rst_SolveTaskSearch ( Route * route, Task & task, bool isOpt ) {
             for (Point p=task.end;p!=task.start;p=p-dir[mem_dir[Rst_UniquePoint( route, p )]]) {
                 Tsk_Append( task, Rst_PintoEdge( route, p, p-dir[mem_dir[Rst_UniquePoint( route, p )]] ) );
             }
-            return true;
+            return 1;
         }
         for(unsigned int i=0;i<4;i++) {
             Point point = target.pos + dir[i];
@@ -303,9 +343,10 @@ bool Rst_SolveTaskSearch ( Route * route, Task & task, bool isOpt ) {
                 continue;
             }
             // continue if edge is out of capacity
-            if ( isOpt && Rst_EdgeOverflow( route, edge ) > 0 ) {
+            if ( isOpt && route->edgeCaps[edge] <= route->edgeUtils[edge] ) {
                 continue;
             }
+
             // net cost
             int cost = target.cost - (target.pos^task.end);
             // weight of the edge between target and point
@@ -325,7 +366,7 @@ bool Rst_SolveTaskSearch ( Route * route, Task & task, bool isOpt ) {
             }
         }
     }
-    return false;
+    return 0;
 }
 
 Point Rst_SolveTaskInitial_Helper ( Route * route, Task & task, Point start, Point end ) {
@@ -484,11 +525,9 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
     
     assert( Net_HasResult( net ) );
 
-    // skip too large network
-    if ( Net_GetArea( net ) >= route->Reroute_Max_NetArea ) {
-        return -1;
-    }
-    
+    // means that net is lost control if not collected
+    net->flag = false;
+
     // clean the utility, store the overflow released
     int oldOverflow = Rst_ReleaseUtil( route, net->edges );
 
@@ -505,12 +544,13 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
             }
 
             // break if we have tried enough
-            if ( difficulty * Tsk_GetScale( task ) >= route->Reroute_Max_Complexity || difficulty >= route->Reroute_Max_Difficulty ) {
-                Tsk_SetDifficulty( task, 4 );
+            if ( difficulty * Tsk_GetSize( task ) >= route->Reroute_Max_Complexity || difficulty >= route->Reroute_Max_Difficulty ) {
+                Tsk_SetDifficulty( task, 8 );
                 Rst_SolveTaskSearch( route, task, false );
                 break;
             }
         }
+
         assert( Tsk_HasResult( task ) );
     }
     EDGES * edges = Tsk_CollectResult( net->pTasks );
@@ -528,6 +568,9 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
     net->edges = edges;
     net->overflow = newOverflow;
 
+    // we get control again
+    net->flag = true;
+
     // update utility and edge weights
     Rst_UpdateUtil( route, net->edges );
     Rst_UpdateWeight( route, net->edges );
@@ -535,8 +578,113 @@ int Rst_RerouteNet ( Route * route, Net * net ) {
     return oldOverflow - newOverflow;
 }
 
-int Rst_RerouteTask ( Route * route, Task & task ) {
+int Rst_RerouteTask ( Route * route, Task & task, int limit ) {
 
+    assert ( Tsk_HasResult(task) ); 
+
+    // skip non-overflow
+    if ( Rst_EdgesOverflow( route, task.edges ) == 0 ) {
+        return 0;
+    }
+
+    // skip large task
+    if ( Tsk_GetSize( task ) > 2 ) {
+        return 0;
+    }
+
+    // deal with the limit, auto set to be the estimation
+    if ( limit == AUTO ) {
+        Point start =   ( (task.start -= task.end) - Point(task.difficulty, task.difficulty) );
+        Point end   =   ( (task.start += task.end) + Point(task.difficulty, task.difficulty) );
+        start   = ( start   += Point(0,0) );
+        end     = ( end     -= Point( route->gx-1, route->gy-1 ) );
+
+        limit   = Rst_GetEstimation( route, start, end );
+    }
+
+    struct Stage {
+        int cost;
+        Point pos;
+        Stage( int cost, Point pos ) : cost(cost), pos(pos) {}
+    };
+    struct CMP {
+        bool operator () ( const Stage & a,  const Stage & b ) { return a.cost > b.cost; }
+    };
+
+    map<UNIQUE_POINT, bool> visited;   visited.clear();
+    map<UNIQUE_POINT, int> cur_cost;   cur_cost.clear();
+    map<UNIQUE_POINT, DIRECT> mem_dir; mem_dir.clear();
+    priority_queue<Stage, vector<Stage>, CMP > queue;
+
+    // set a to be the start point
+    queue.push( Stage( task.start^task.end, task.start ) );
+    cur_cost[ Rst_UniquePoint( route, task.start ) ] = task.start^task.end;
+    mem_dir [ Rst_UniquePoint( route, task.start ) ] = NONE;
+    // loop until finding end
+    while( !queue.empty() ) {
+        Stage target = queue.top();
+        queue.pop();
+
+        // continue if point has been traversed
+        if ( visited.find( Rst_UniquePoint( route, target.pos ) ) != visited.end() ) {
+            continue;
+        }
+        visited[ Rst_UniquePoint( route, target.pos ) ] = true;
+
+        // quit if reach the end point
+        if (target.pos == task.end) {
+            Tsk_CleanResult( task );
+            task.edges = new EDGES;
+
+            // retrace
+            for (Point p=task.end;p!=task.start;p=p-dir[mem_dir[Rst_UniquePoint( route, p )]]) {
+                Tsk_Append( task, Rst_PintoEdge( route, p, p-dir[mem_dir[Rst_UniquePoint( route, p )]] ) );
+            }
+
+            // make sure a valid result is stored
+            assert( Tsk_HasResult( task ) );
+            return true;
+        }
+        for(unsigned int i=0;i<4;i++) {
+            Point point = target.pos + dir[i];
+            EDGE edge = Rst_PintoEdge( route, point, target.pos );
+
+            // continue if point is out of range
+            if ( !Rst_PointIsValid( route, point ) || !Tsk_PointIsValid( task, point ) ) {
+                continue;
+            }
+            // continue if point is visited
+            if ( visited.find( Rst_UniquePoint( route, point ) ) != visited.end() ) {
+                continue;
+            }
+            // continue if edge is out of capacity
+            if ( route->edgeCaps[ edge ] <= route->edgeUtils[ edge ] ) {
+                continue;
+            }
+
+            // net cost
+            int cost = target.cost - (target.pos^task.end);
+            // weight of the edge between target and point
+            cost += route->cap;
+            cost -= route->edgeCaps[ edge ];
+            cost += route->edgeUtils[ edge ];
+            // weight of estimate distance
+            cost += point^task.end;
+
+            if ( 
+                    cur_cost.find( Rst_UniquePoint( route, point ) ) == cur_cost.end() ||
+                  cost < cur_cost[ Rst_UniquePoint( route, point ) ] 
+            ) {
+                queue.push( Stage( cost, point ) );
+                cur_cost[ Rst_UniquePoint( route, point ) ] = cost;
+                mem_dir [ Rst_UniquePoint( route, point ) ] = (DIRECT)i;
+            }
+        }
+    }
+
+    // make sure a valid result is stored
+    assert( Tsk_HasResult( task ) );
+    return false;
 }
 
 void Rst_InitWeight ( Route * route ) {
@@ -599,7 +747,7 @@ void Rst_FixNet ( Route * route, Net * net ) {
 
         // solve it by A*
         Task task = Tsk_Init( start, end );
-        Tsk_SetDifficulty( task, 1 );
+        Tsk_SetDifficulty( task, 4 );
         if ( Rst_SolveTaskSearch( route, task, true ) ) {
             assert( Tsk_HasResult( task ) );
             EDGES * solution = Tsk_GetResult( task );
@@ -716,9 +864,15 @@ void Rst_NetInitTasks ( Route * route, Net * net ) {
 }
 
 void Rst_Init ( Route * route ) {
+
+    // initialize task for net
     for ( int i=0;i<route->numNets;i++ ) {
         Rst_NetInitTasks( route, route->nets+i );
-    } 
+    }
+
+    // initialize estimation
+    Rst_InitEstimation( route );
+
 }
 
 MODE Rst_GetMode ( Route * route ) {
@@ -733,11 +887,200 @@ void Rst_SetMode ( Route * route, MODE mode ) {
         route->Initial_Max_Difficulty   = 3;
         route->Initial_Max_TaskScale    = 20;
         route->Reroute_Max_Difficulty   = 64;
-        route->Reroute_Max_Complexity   = 128;
-        route->Reroute_Max_NetArea      = 400;
+        route->Reroute_Max_Complexity   = 1024;
+        route->Reroute_Max_NetArea      = 10000;
+        break;
+    
+    // Adaptec1 is MEDIUM
+    case MEDIUM:
+        route->Initial_Max_Difficulty   = 3;
+        route->Initial_Max_TaskScale    = -1;
+        route->Reroute_Max_Difficulty   = 256;
+        route->Reroute_Max_Complexity   = 512;
+        route->Reroute_Max_NetArea      = 10;
+        break;
+    
+    // Adaptec1 is MEDIUM
+    case DIFFICULT:
+        route->Initial_Max_Difficulty   = 0;
+        route->Initial_Max_TaskScale    = 100;
+        route->Reroute_Max_Difficulty   = 1;
+        route->Reroute_Max_Complexity   = 16;
+        route->Reroute_Max_NetArea      = 10000;
         break;
     
     default:
         break;
     }
+}
+
+void Rst_PrintPinsDist ( Route * route ) {
+    ofstream foutput("pinDist.csv");
+    foutput << "x,y" << endl;
+
+    for ( int i=0;i<route->numNets;i++ ) {
+        Net * net = route->nets + i;
+        for ( auto & pin : net->pins ) {
+            foutput << pin.x << "," << pin.y << endl;
+        }
+    }
+
+    foutput.close();
+}
+
+void Rst_PrintWireDist ( Route * route ) {
+    ofstream foutput("wireDist.csv");
+    foutput << "x,y" << endl;
+
+    for ( int i=0;i<route->numNets;i++ ) {
+        Net * net = route->nets + i;
+        for ( auto & edge : *(net->edges) ) {
+            foutput << Rst_EdgetoPin( route, edge ).first.x << ",";
+            foutput << Rst_EdgetoPin( route, edge ).first.y << endl;
+            foutput << Rst_EdgetoPin( route, edge ).second.x << ",";
+            foutput << Rst_EdgetoPin( route, edge ).second.y << endl;            
+        }
+    }
+}
+
+void Rst_PrintCapsDist ( Route * route ) {
+    ofstream foutput("capsDist.csv");
+    foutput << "x,y" << endl;
+
+    for ( int edge=0;edge<2*route->gx*route->gy;edge++ ) {
+        if ( !Rst_PointIsValid( route, Rst_EdgetoPin( route, edge ).first ) ) {
+            continue;
+        }
+        if ( !Rst_PointIsValid( route, Rst_EdgetoPin( route, edge ).second ) ) {
+            continue;
+        }
+        foutput << Rst_EdgetoPin( route, edge ).first.x << ",";
+        foutput << Rst_EdgetoPin( route, edge ).first.y << endl;
+        foutput << Rst_EdgetoPin( route, edge ).second.x << ",";
+        foutput << Rst_EdgetoPin( route, edge ).second.y << endl;
+    }
+}
+
+bool Rst_HasEstimation ( Route * route ) {
+    return route->utilExp != NULL;
+}
+
+void Rst_ClearEstimation ( Route * route ) {
+    delete route->utilExp; route->utilExp = NULL;
+}
+
+double Rst_GetEstimation ( Route * route, Point start, Point end ) {
+
+    // should have been initialized
+    assert( route->utilExp != NULL );
+
+    Point lower = ( start -= end );
+    Point upper = ( start += end );
+
+    double exp = 0;
+    exp += route->utilExp[ lower.y * route->gx + lower.x ];
+    exp += route->utilExp[ upper.y * route->gx + upper.x ];
+    exp -= route->utilExp[ lower.y * route->gx + upper.x ];
+    exp -= route->utilExp[ upper.y * route->gx + lower.x ];
+
+    return exp;
+
+}
+
+void Rst_InitEstimation ( Route * route ) {
+
+    // has not been initialized
+    assert( route->utilExp == NULL );
+
+    route->utilExp = new double [route->gx * route->gy];
+    for ( int i=0;i<route->numNets;i++ ) {
+
+        Net * net = route->nets + i;
+
+        // should be after all tasks are initialized
+        assert( Net_HasTasks( net ) );
+
+        for ( auto & task : *(net->pTasks) ) {
+
+            // calculate the estimation
+            Point lower = ( task.start -= task.end );
+            Point upper = ( task.start += task.end );
+            int expTotalWirelength = ( lower ^ upper );
+            int TotalArea = Tsk_GetArea( task );
+            double expUtil = (double)expTotalWirelength/(double)TotalArea;
+
+            // update prefix sum
+            for ( int x=lower.x;x<=upper.x;x++ ) {
+                for ( int y=lower.y;y<upper.y;y++ ) {
+                    double enclose = (x-lower.x)*(y-lower.y)*expUtil;
+                    route->utilExp[y*route->gx+x] += enclose;
+                }
+            }
+        }
+    }
+}
+
+double  Rst_GetOfEstimation ( Route * route, Point start, Point end ) {
+
+    double utilExp = Rst_GetEstimation( route, start, end );
+
+    int x = abs( start.x - end.x ) + 1;
+    int y = abs( start.y - end.y ) + 1;
+    int area = 2*x*y - x -y;
+
+    double capsExp = route->cap * area;
+
+    return max( 0.0, utilExp - capsExp );
+
+}
+
+int Rst_ReduceNet ( Route * route, Net * net ) {
+   
+    assert( Net_HasResult( net ) );
+
+    // skip the net without control
+    // if ( net->flag == false ) {
+    //     return -1;
+    // }
+    
+    // clean the utility, store the overflow released
+    int oldOverflow = Rst_ReleaseUtil( route, net->edges );
+
+    for( auto & task : *(net->pTasks) ) {
+
+        // skip non-overflow
+        if ( Rst_EdgesOverflow( route, task.edges ) == 0 ) {
+            continue;
+        }
+
+        Tsk_CleanResult( task );
+        Tsk_SetDifficulty( task, 100 );
+        // break if we have a solution
+        if ( !Rst_SolveTaskSearch( route, task, true ) ) {
+            Tsk_SetDifficulty( task, 32 );
+            Rst_SolveTaskSearch( route, task, false );
+        }
+
+        assert( Tsk_HasResult( task ) );
+    }
+    EDGES * edges = Tsk_CollectResult( net->pTasks );
+    int newOverflow = Rst_EdgesOverflow( route, edges );
+
+    // skip update if new result is worse
+    if ( oldOverflow <= newOverflow ) {
+        Rst_UpdateUtil( route, net->edges );
+        Edg_Free( edges ); 
+        return -1;
+    }
+
+    // update segments, edges and overflow
+    Net_CleanResult( net );
+    net->edges = edges;
+    net->overflow = newOverflow;
+
+    // update utility and edge weights
+    Rst_UpdateUtil( route, net->edges );
+    Rst_UpdateWeight( route, net->edges );
+
+    return oldOverflow - newOverflow;
 }

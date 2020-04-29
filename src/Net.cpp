@@ -68,6 +68,7 @@ void Net_CollectResult( Net * net ) {
     assert( Net_HasTasks( net ) );
 
     net->edges = Tsk_CollectResult( net->pTasks );
+    net->flag = true;
 
 }
 

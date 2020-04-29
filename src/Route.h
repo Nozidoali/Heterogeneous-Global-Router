@@ -4,6 +4,9 @@
 #include "Net.h"
 #include "Logic_Timer.h"
 
+#define OF_MAX 2147483647
+#define AUTO   -1
+
 enum MODE {
     EASY,
     MEDIUM,
@@ -41,6 +44,9 @@ struct Route
     int Reroute_Max_Complexity; // Scale * difficulty
     int Reroute_Max_Difficulty;
 
+//==================================Estimation===============================//
+    double  *utilExp;
+
 };
 
 //==================================Memory Control===========================//
@@ -71,7 +77,8 @@ bool                Rst_SolveTaskSearch ( Route * route, Task & task, bool isOpt
 
 //==================================RRR======================================//
 int                 Rst_RerouteNet      ( Route * route, Net * net );
-int                 Rst_RerouteTask     ( Route * route, Task & net );
+int                 Rst_RerouteTask     ( Route * route, Task & net, int limit );
+int                 Rst_ReduceNet       ( Route * route, Net * net );
 
 //==================================Fix======================================//
 void                Rst_FixNet          ( Route * route, Net * net );
@@ -99,6 +106,9 @@ void                Rst_UpdateWeight    ( Route * route, EDGES * edges );
 void                Rst_PrintStat       ( Route * route );
 void                Rst_PrintNetResult  ( Route * route, Net * net );
 void                Rst_PrintHeader     ( Route * route );
+void                Rst_PrintWireDist   ( Route * route );
+void                Rst_PrintCapsDist   ( Route * route );
+void                Rst_PrintPinsDist   ( Route * route );
 
 //==================================Others===================================//
 bool                Rst_PointIsValid    ( Route * route, Point point );
@@ -110,5 +120,12 @@ void                Rst_ReleaseCap      ( Route * route );
 //==================================Mode Selection===========================//
 MODE                Rst_GetMode         ( Route * route );
 void                Rst_SetMode         ( Route * route, MODE mode );
+
+//==================================Estimation===============================//
+void                Rst_InitEstimation  ( Route * route );
+bool                Rst_HasEstimation   ( Route * route );
+void                Rst_ClearEstimation ( Route * route );
+double              Rst_GetEstimation   ( Route * route, Point start, Point end );
+double              Rst_GetOfEstimation ( Route * route, Point start, Point end );
 
 #endif

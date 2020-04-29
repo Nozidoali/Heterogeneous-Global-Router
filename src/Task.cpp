@@ -49,6 +49,13 @@ bool Tsk_PointIsValid( const Task & task, Point point ) {
 }
 
 void Tsk_SetDifficulty ( Task & task, int difficulty ) {
+
+    // deal with AUTO command
+    if ( difficulty == -1 ) {
+        task.difficulty = Tsk_GetScale( task ) > 10 ?  1 : 4;
+        return;
+    }
+
     task.difficulty = difficulty;
 }
 
@@ -74,9 +81,15 @@ void Edg_Free ( EDGES * edges ) {
 }
 
 int Tsk_GetScale ( const Task & task ) {
-    return min( abs(task.start.x-task.end.x), abs(task.start.y-task.end.y) ) + 1;
+    return task.start ^ task.end;
+}
+
+int Tsk_GetSize ( const Task & task ) {
+    return min( abs(task.start.x - task.end.x), abs(task.start.y - task.end.y)  ) + 1;
 }
 
 int Tsk_GetArea ( const Task & task ) {
-    return task.start / task.end;
+    int x = abs( task.start.x - task.end.x ) + 1;
+    int y = abs( task.start.y - task.end.y ) + 1; 
+    return 2*x*y - x - y;
 }
