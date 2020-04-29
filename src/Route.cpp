@@ -219,6 +219,10 @@ void Rst_Solve( Route * route ) {
         }
     }
 
+    // Net Ordering
+    if ( route->isOrdered )
+        sort( route->nets, route->nets+route->numNets, CMP_NetOverFlowInc );  
+
     // Rip-up and Reroute
     Tmr_Start();
     if ( route->isOrdered || route->isDecomposition ) {
@@ -747,7 +751,7 @@ void Rst_FixNet ( Route * route, Net * net ) {
 
         // solve it by A*
         Task task = Tsk_Init( start, end );
-        Tsk_SetDifficulty( task, 4 );
+        Tsk_SetDifficulty( task, 8 );
         if ( Rst_SolveTaskSearch( route, task, true ) ) {
             assert( Tsk_HasResult( task ) );
             EDGES * solution = Tsk_GetResult( task );
@@ -825,7 +829,7 @@ void  Rst_PrintHeader ( Route * route ) {
 
     cout << " Info: " << endl;
     cout.width(30); cout << "Total Net Number = " << route->numNets << endl;
-    cout.width(30); cout << "Total Grid Size = " << route->gx << " * " << route->gy << endl;
+    cout.width(30); cout << "Total Grid Size  = " << route->gx << " * " << route->gy << endl;
 
     cout << endl;
 }
@@ -1039,9 +1043,9 @@ int Rst_ReduceNet ( Route * route, Net * net ) {
     assert( Net_HasResult( net ) );
 
     // skip the net without control
-    // if ( net->flag == false ) {
-    //     return -1;
-    // }
+    if ( net->flag == false ) {
+        return -1;
+    }
     
     // clean the utility, store the overflow released
     int oldOverflow = Rst_ReleaseUtil( route, net->edges );
