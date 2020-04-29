@@ -238,6 +238,30 @@ void Rst_Solve( Route * route ) {
             // cerr << route->numNets+i << "," << route->overflow << endl;
             printStats( i );
         }
+
+        for (int i=0;i<route->numNets;i++) {
+
+            // break if time is up
+            if ( Tmr_TimeLeft() == 0 ) {
+                break;
+            }
+            
+            Rst_ReduceNet( route, route->nets+i );
+            // cerr << route->numNets+i << "," << route->overflow << endl;
+            printStats( i );
+        }
+
+        for (int i=0;i<route->numNets;i++) {
+
+            // break if time is up
+            if ( Tmr_TimeLeft() == 0 ) {
+                break;
+            }
+            
+            Rst_ReduceNet( route, route->nets+i );
+            // cerr << route->numNets+i << "," << route->overflow << endl;
+            printStats( i );
+        }
     }
 
     Tmr_Start();
@@ -251,6 +275,7 @@ void Rst_Solve( Route * route ) {
                 break;
             }
 
+            Rst_FixNet( route, route->nets+i );
             Rst_FixNet( route, route->nets+i );
             // cerr << route->numNets+i << "," << route->overflow << endl;
         }
@@ -751,7 +776,7 @@ void Rst_FixNet ( Route * route, Net * net ) {
 
         // solve it by A*
         Task task = Tsk_Init( start, end );
-        Tsk_SetDifficulty( task, 8 );
+        Tsk_SetDifficulty( task, 1 );
         if ( Rst_SolveTaskSearch( route, task, true ) ) {
             assert( Tsk_HasResult( task ) );
             EDGES * solution = Tsk_GetResult( task );
@@ -1046,6 +1071,9 @@ int Rst_ReduceNet ( Route * route, Net * net ) {
     if ( net->flag == false ) {
         return -1;
     }
+
+    // we are losing control
+    net->flag = false;
     
     // clean the utility, store the overflow released
     int oldOverflow = Rst_ReleaseUtil( route, net->edges );
@@ -1081,6 +1109,9 @@ int Rst_ReduceNet ( Route * route, Net * net ) {
     Net_CleanResult( net );
     net->edges = edges;
     net->overflow = newOverflow;
+
+    // we get the control back
+    net->flag = true;
 
     // update utility and edge weights
     Rst_UpdateUtil( route, net->edges );
