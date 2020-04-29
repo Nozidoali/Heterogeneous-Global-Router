@@ -933,7 +933,7 @@ void Rst_SetMode ( Route * route, MODE mode ) {
         route->Initial_Max_Difficulty   = 1;
         route->Initial_Max_TaskScale    = 10;
         route->Reroute_Max_Difficulty   = 4;
-        route->Reroute_Max_Complexity   = 32;
+        route->Reroute_Max_Complexity   = 64;
         route->Reroute_Max_TaskScale    = 40;
         break;
     

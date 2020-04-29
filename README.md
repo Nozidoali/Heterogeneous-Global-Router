@@ -58,17 +58,10 @@ Please note that you need `C++14 feature`.
 
 ## Run
 ```
-    Usage : ./ROUTE.exe -d=<Decomposition> -n=<Ordered> <input_benchmark_name> <output_file_name>
+    make
+    ./ROUTE.exe -d=1 -n=1 <input_benchmark_name> <output_file_name>
 ```
 
 ## Performance
 
-***Adaptec1***:
-```
-| Parameter | Runtime |   TWL   |  TOF1   |
-| :-------: | :-----: | :-----: | :-----: |
-| -d=1 -n=1 | 0:29.85 | 3471120 | 486502  |
-| -d=1 -n=0 | 0:28.07 | 3471093 | 488286  |
-| -d=0 -n=1 | 0:26.50 | 5408185 | 1585962 |
-| -d=0 -n=0 | 0:06.99 | 5461421 | 1657741 |
-```
+To be continued
