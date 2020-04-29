@@ -234,6 +234,7 @@ void Rst_Solve( Route * route ) {
         cout << endl;
         bool timeUp = false;
         int maxTime = 10;
+        int prev = route->overflow;
         while ( !timeUp && --maxTime ) {
             for (int i=0;i<route->numNets;i++) {
 
@@ -246,7 +247,14 @@ void Rst_Solve( Route * route ) {
                 Rst_ReduceNet( route, route->nets+i );
                 // cerr << route->numNets+i << "," << route->overflow << endl;
                 printStats( i );
-            }            
+            }
+
+            // break if improvement is low
+            if( route->overflow >= prev - 5 ) {
+                break;
+            }
+
+            prev = route->overflow;
         }
 
 
@@ -819,6 +827,9 @@ void Rst_FixNet ( Route * route, Net * net ) {
 }
 
 void  Rst_PrintHeader ( Route * route ) {
+
+    string mode[3] = {"EASY","MEDIUM","HARD"};
+
     cout << "************************************************************" << endl ;
     cout << "*                                                          *" << endl ;
     cout << "*                 Router (Version 3.0)                     *" << endl ;
@@ -831,6 +842,7 @@ void  Rst_PrintHeader ( Route * route ) {
     cout << " Info: " << endl;
     cout.width(30); cout << "Total Net Number = " << route->numNets << endl;
     cout.width(30); cout << "Total Grid Size  = " << route->gx << " * " << route->gy << endl;
+    cout.width(30); cout << "Route Difficulty = " << mode[ (unsigned int)Rst_GetMode( route )  ] << endl;
 
     cout << endl;
 }
@@ -913,16 +925,16 @@ void Rst_SetMode ( Route * route, MODE mode ) {
         route->Initial_Max_TaskScale    = 10;
         route->Reroute_Max_Difficulty   = 32;
         route->Reroute_Max_Complexity   = 128;
-        route->Reroute_Max_TaskScale    = 100;
+        route->Reroute_Max_TaskScale    = 200;
         break;
     
     // Adaptec1 is MEDIUM
     case DIFFICULT:
-        route->Initial_Max_Difficulty   = 2;
+        route->Initial_Max_Difficulty   = 1;
         route->Initial_Max_TaskScale    = 10;
-        route->Reroute_Max_Difficulty   = 32;
-        route->Reroute_Max_Complexity   = 128;
-        route->Reroute_Max_TaskScale    = 100;
+        route->Reroute_Max_Difficulty   = 16;
+        route->Reroute_Max_Complexity   = 64;
+        route->Reroute_Max_TaskScale    = 64;
         break;
     
     default:
