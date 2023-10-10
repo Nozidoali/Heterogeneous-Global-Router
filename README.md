@@ -1,12 +1,12 @@
-# Attention-based Global Router
+# Heterogeneous Global Router
 
-> Implement of a CAD tool of global routing.  
+> Implementation of a CAD tool for global routing.  
 
 <hr>
 <center> Copyright@why </center>
 
 ## Platform
-Please build this program on a 64-bit UNIX like system with library `pthread`. Dependency:
+Please build this program on a 64-bit UNIX-like system with library `pthread`. Dependency:
 ```bash
     sudo apt-get install make gcc g++
 ```
